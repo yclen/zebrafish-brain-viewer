@@ -25,7 +25,7 @@ The page needs an internet connection the first time, to load Three.js from the 
 - **Search** matches region names and descriptions (e.g. "raphe", "escape", "prey").
 - **Colours:** use the original atlas colours, or colour by division (forebrain / midbrain / hindbrain / peripheral).
 - **Slice:** cut the model top → bottom, front → back or side → side, then drag the slider to move through it. Cut regions show as solid coloured cross-sections, and a readout shows the depth in µm. The ⇅ button keeps the other half.
-- **Fish body:** shows a see-through body surface and swim bladder from a real micro-CT scan, with the brain sitting inside it.
+- **Fish body:** shows a whole see-through larva around the brain. The head and front trunk, the eyes and lenses, and the swim bladder come from a real micro-CT scan; the tail and fin fold are reconstructed.
 
 ## Files
 
@@ -33,7 +33,7 @@ The page needs an internet connection the first time, to load Three.js from the 
 |---|---|
 | `index.html`, `app.js`, `style.css` | The viewer (Three.js 0.170, no build step) |
 | `data/brain.glb` | All 110 region meshes plus the brain outline, simplified and compressed (about 4 MB, 608k triangles) |
-| `data/fish.glb` | Fish body and swim bladder in atlas coordinates (0.3 MB) |
+| `data/fish.glb` | Fish body, tail, fin fold, eyes, lenses and swim bladder in atlas coordinates (0.4 MB) |
 | `data/regions.json` | Region hierarchy, atlas colours and plain-language function summaries |
 | `build/` | Scripts that regenerate the data from mapZebrain |
 
@@ -41,11 +41,18 @@ The page needs an internet connection the first time, to load Three.js from the 
 
 - The meshes and hierarchy come from [mapZebrain](https://mapzebrain.org) (Max Planck Institute for Biological Intelligence), region annotation **v2.0 (MECE, 2024)**. They are redistributed here in simplified form, with credit. Please cite Kunst et al. 2019, *A Cellular-Resolution Atlas of the Larval Zebrafish Brain*, Neuron 103:21–38. The MIT license in this repository covers the viewer code only, not the atlas data.
 - **The fish body** comes from a micro-CT scan of a 5-day-old larva (fish 3, file `5dpf_3_axial_8bit_chenglab.tif`) from Ding et al. 2019, *eLife* 8:e44898, published on [Dryad](https://doi.org/10.5061/dryad.4nb12g2) under CC0.
-  - The scan covers only the head and front trunk, about 1.5 mm from the snout, so the body ends flat there; a whole larva is about 3.9 mm long.
-  - It was lined up with the atlas by matching its eye lenses to the atlas eyes (which set the position and a scale of 1.09) and its brain outline to the atlas brain (which set the head tilt). The brains of the two fish match to within about 16 µm.
+  - **Sizing.** The scan comes with its own brain outline. That outline is fitted onto the atlas brain with an affine transform (separate stretch along each axis), using the eye lenses as extra anchors, and the same transform is applied to the whole body. This keeps the scanned fish's own brain-to-body proportions. A single uniform scale did not work: the 5-day brain is shaped differently from the 6-day atlas brain, so the atlas brain poked out of the head by up to 74 µm.
+  - **Containment.** After the fit, the atlas brain and eyes still bulged up to ~35 µm past the scanned skin in places (mostly the hindbrain roof and the eyes). There the skin is pushed out just enough to cover them. That affected about 10% of the brain-and-eye volume, all within a few tens of µm of the surface.
+  - **Eyes.** The atlas imaging volume is 597 µm wide and cuts both eyes flat on their outer sides, so the atlas retinas look sliced off. The eyes and lenses shown with the fish body come from the scan instead, so the whole eye is visible.
+  - **Tail.** The scan stops about 1.44 mm behind the snout. The rest is a stylized reconstruction, not scan data:
+    - It starts from the scan's last cross-section, so there is no seam.
+    - It narrows to a laterally compressed tail (about 120 µm wide and 230 µm deep behind the anus).
+    - It tapers to a total length of 3.9 mm, a normal 5-day size, before the warp.
+    - It carries a median fin fold, dorsal along the tail and ventral behind the anus, ending in a rounded caudal fin.
+    - It is steered onto the brain's midline, because the scanned trunk angles about 50 µm to one side.
+  - **Swim bladder:** the largest air pocket inside the scanned body.
   - The fit is approximate: the scan and the atlas come from different fish, one day apart in age.
-  - The swim bladder is the largest air pocket inside the scanned body.
-  - `build/ct_fish_body.py` holds the processing script.
+  - `build/ct_fish_body.py` holds the processing script, and `build/fish_alignment.json` holds the fitted transform.
 - Three regions have no 3D mesh in the atlas, so they appear in grey italics in the list:
   - posterior tuberculum, posterior part
   - region of the nucleus of the medial longitudinal fascicle
@@ -71,4 +78,4 @@ You only need to do this to change the mesh quality or to pick up a new atlas ve
    1. From the Dryad dataset, extract `5dpf_3_axial_8bit_chenglab.tif` and `brain_region_segmentations/5dpf_3_Registered_Seg.tif`. Dryad blocks automated downloads, so download the two `.7z` archives in a browser.
    2. Install the Python packages: `pip install py7zr scikit-image tifffile`.
    3. Run `python -P build/ct_fish_body.py <recon.tif> <seg.tif> items.json stl/ ct-out/ 8`.
-   4. Run `build_glb.mjs` on `ct-out/` with an items file listing `fish_body` and `swim_bladder`.
+   4. Run `build_glb.mjs` on `ct-out/` with an items file listing `fish_body`, `fish_tail`, `fin_fold`, `swim_bladder`, `eyes` and `lenses` (ratio 0.25, error 0.002).

@@ -134,10 +134,20 @@ def main(recon, seg, items_path, atlas_stl_dir, out_dir, factor=8):
     solid = ndi.binary_fill_holes(body)
     # also fill per axial slice (cavities that touch the scan edge in 3D)
     solid = np.stack([ndi.binary_fill_holes(s) for s in solid])
+    solid_raw = solid.copy()  # for the swim-bladder search below
+    # The roof of the fourth ventricle over the hindbrain and the epidermis are only a few um thick
+    # and fall below the threshold, so the outline dipped into the head there. Seal dips narrower
+    # than ~50 um with a ball closing, then add one voxel (~6 um) for the skin.
+    rr = 4
+    zz, yy, xx = np.indices((2 * rr + 1,) * 3) - rr
+    ball = zz ** 2 + yy ** 2 + xx ** 2 <= rr ** 2
+    padded = np.pad(solid, rr + 1)
+    solid = ndi.binary_closing(padded, structure=ball)[rr + 1: -rr - 1, rr + 1: -rr - 1, rr + 1: -rr - 1]
+    solid = ndi.binary_dilation(solid, iterations=1)
     log(f"body voxels {solid.sum()}  (~{solid.sum() * um ** 3 / 1e9:.3f} mm^3)")
 
     # ---- 2. swim bladder: largest dark pocket enclosed by the body
-    cavity = solid & ~body
+    cavity = solid_raw & ~body
     cavity = ndi.binary_opening(cavity, iterations=1)
     bladder = largest_component(cavity) if cavity.any() else cavity
     log(f"swim-bladder candidate voxels {bladder.sum()} (~{bladder.sum() * um ** 3 / 1e6:.0f} x10^6 um^3)")
@@ -145,7 +155,9 @@ def main(recon, seg, items_path, atlas_stl_dir, out_dir, factor=8):
     # ---- 3. brain from labels
     labels = load_downsampled(seg, f, reduce="max")
     labels[zmax:] = 0
-    brain = labels > 0
+    # Labels 101 and 103 lie 880-1016 um from the snout, beyond the caudal end of the atlas
+    # hindbrain (most likely rostral spinal cord), so they are left out of the brain used for fitting.
+    brain = (labels > 0) & (labels != 101) & (labels != 103)
     log(f"brain voxels {brain.sum()}; label values {np.unique(labels)[:20]}")
 
     # ---- 4. register CT brain -> atlas brain
@@ -228,13 +240,212 @@ def main(recon, seg, items_path, atlas_stl_dir, out_dir, factor=8):
     log(f"eyes: atlas {eyes_atlas.round(0).tolist()}, scale {s:.3f}; best pitch {np.degrees(th):+.1f} deg, "
         f"brain surface rms (best 80%) {err:.1f} um")
 
+    # Refine with an affine transform (per-axis stretch + shear). The 5 dpf CT brain is
+    # proportioned differently from the 6 dpf atlas brain (longer, narrower), so no single scale
+    # makes the two overlap; a uniform scale left the atlas brain poking out of the CT head.
+    # Fitting the CT brain onto the atlas brain and warping the body with the same transform
+    # keeps the fish's own brain-to-body proportions. Symmetric trimmed ICP on brain surfaces,
+    # with the eyes (CT lens centre <-> atlas retina sphere centre) as weighted landmarks.
+    A, b = s * R, t.copy()
+    tree_at = cKDTree(at_s)
+    w_eye = 0.05 * len(ct_s)
+
+    def solve_affine(P, Q, w):
+        X = np.c_[P, np.ones(len(P))] * np.sqrt(w)[:, None]
+        M, *_ = np.linalg.lstsq(X, Q * np.sqrt(w)[:, None], rcond=None)
+        return M[:3].T, M[3]
+
+    for it in range(80):
+        moved = ct_s @ A.T + b
+        d1, i1 = tree_at.query(moved)
+        k1 = d1 <= np.quantile(d1, 0.9)
+        d2, i2 = cKDTree(moved).query(at_s)
+        k2 = d2 <= np.quantile(d2, 0.9)
+        P = np.concatenate([ct_s[k1], ct_s[i2[k2]], lens_ct])
+        Q = np.concatenate([at_s[i1[k1]], at_s[k2], eyes_atlas])
+        w = np.concatenate([np.ones(k1.sum()), np.ones(k2.sum()), np.full(2, w_eye)])
+        A, b = solve_affine(P, Q, w)
+    moved = ct_s @ A.T + b
+    d1, _ = tree_at.query(moved)
+    d2, _ = cKDTree(moved).query(at_s)
+    sv = np.linalg.svd(A, compute_uv=False)
+    eye_err = np.linalg.norm(lens_ct @ A.T + b - eyes_atlas, axis=1)
+    log(f"affine: stretch factors {sv.round(3).tolist()}, brain rms ct->atlas {np.sqrt(np.mean(d1**2)):.1f} um, "
+        f"atlas->ct {np.sqrt(np.mean(d2**2)):.1f} um, eye landmark error {eye_err.round(0).tolist()} um")
+    s, R, t = None, A, b  # downstream code applies v @ R.T + t; with s folded into A
+
+    # ---- 4b. make sure the atlas brain and eyes sit inside the skin
+    # After the fit, 95% of the atlas brain surface lies within ~8 um of the inside of the CT skin,
+    # but the 6 dpf atlas brain and eyes bulge up to ~35 um past the 5 dpf scanned head in places
+    # (mostly the hindbrain roof and the eyes). There, push the skin out to cover them: voxelize the
+    # atlas brain+eye outline in CT space and add it (plus one voxel of skin) to the body.
+    outline = read_stl_vertices(os.path.join(atlas_stl_dir, "0.stl"))
+    # densify: add triangle centroids and edge midpoints so the rasterized shell has no gaps
+    tri = outline.reshape(-1, 3, 3)
+    dense = np.concatenate([outline, tri.mean(1), (tri[:, 0] + tri[:, 1]) / 2, (tri[:, 1] + tri[:, 2]) / 2, (tri[:, 0] + tri[:, 2]) / 2])
+    q = np.linalg.solve(R, (dense - t).T).T / um  # CT (x, y, z) voxel coords
+    idx = np.round(q[:, ::-1]).astype(int)
+    keep = np.all((idx >= 0) & (idx < np.array(solid.shape)), axis=1)
+    shell = np.zeros_like(solid)
+    shell[tuple(idx[keep].T)] = True
+    shell = ndi.binary_closing(ndi.binary_dilation(shell, iterations=1), iterations=1)
+    atlas_solid = ndi.binary_fill_holes(shell)
+    added = atlas_solid & ~solid
+    log(f"atlas brain+eyes outline: {atlas_solid.sum()} voxels; {added.sum()} voxels "
+        f"({added.sum() / max(atlas_solid.sum(), 1) * 100:.1f}%) were outside the CT skin and are covered by pushing the skin out")
+    solid = solid | ndi.binary_dilation(atlas_solid, iterations=1)
+
+    # ---- 4c. eyes and lenses from the CT (the atlas crops the outer side of both eyes)
+    sm = ndi.gaussian_filter(vol, 1.0)
+    notbrain = ~ndi.binary_dilation(brain, iterations=2)
+    eyes = np.zeros_like(solid)
+    lens_mask = np.zeros_like(solid)
+    zi, yi, xi = np.indices(vol.shape)
+    for L in lenses / um:  # lens centre in voxel (x, y, z)
+        d = np.sqrt((xi - L[0]) ** 2 + (yi - L[1]) ** 2 + (zi - L[2]) ** 2) * um
+        m = ndi.binary_opening((sm > 40) & (d < 170) & notbrain, iterations=2)
+        lab, n = ndi.label(m)
+        shell = (d > 45) & (d < 110)  # the retina cup around the lens
+        counts = np.bincount(lab[shell & m].ravel(), minlength=n + 1)
+        counts[0] = 0
+        e = ndi.binary_dilation(lab == counts.argmax(), iterations=1) & (sm > 30)
+        eyes |= ndi.binary_fill_holes(ndi.binary_closing(e, iterations=2))
+        lens_mask |= ndi.binary_fill_holes((vol > 150) & (d < 60))
+    log(f"eyes: {eyes.sum()} voxels (equivalent radius each "
+        f"{(eyes.sum() / 2 * um ** 3 * 3 / 4 / np.pi) ** (1 / 3):.0f} um); lenses {lens_mask.sum()} voxels")
+
+    # ---- 4d. tail: the scan stops ~1.44 mm behind the snout. Continue the body from its last
+    # complete cross-section, morphing into an ellipse and tapering to a 5 dpf standard length of
+    # ~3.9 mm (snout to tip of the caudal fin fold), with a median fin fold. This part is a
+    # stylized reconstruction, not scan data. Built in CT space so the same warp applies.
+    areas = solid.sum((1, 2))
+    zb = np.where(areas > 0)[0]
+    z_snout, z_last = zb.min(), zb.max()
+    ref = np.median(areas[z_last - 25: z_last - 5])
+    z_c = max(z for z in range(z_last - 25, z_last + 1) if areas[z] > 0.8 * ref)
+    cont = max(measure.find_contours(solid[z_c].astype(float), 0.5), key=len)  # (row=y, col=x)
+    cont = np.c_[cont[:, 1], cont[:, 0]] * um  # (x, y) in um
+    c0 = cont.mean(0)
+    lr2, dv2 = lr[:2] / np.linalg.norm(lr[:2]), dv[:2] / np.linalg.norm(dv[:2])
+    rel = cont - c0
+    a_lr, a_dv = rel @ lr2, rel @ dv2
+    w0, h0 = (a_lr.max() - a_lr.min()) / 2, (a_dv.max() - a_dv.min()) / 2
+    off_dv = (a_dv.max() + a_dv.min()) / 2
+    nth = 96
+    th = np.linspace(0, 2 * np.pi, nth, endpoint=False)
+    ang = np.arctan2(a_dv - off_dv, a_lr / w0 * h0)
+    ring0 = np.array([rel[np.argmin(np.abs(np.angle(np.exp(1j * (ang - t_)))))] for t_ in th])
+    L_total, L_fin = 3900.0, 150.0  # um, 5 dpf: snout to fin tip; caudal fin fold beyond the body tip
+    z0_um, z_tip = z_c * um, z_snout * um + L_total - L_fin
+    z_fin_end = z_snout * um + L_total
+    sstep = lambda a, b, x: np.clip((x - a) / (b - a), 0, 1) ** 2 * (3 - 2 * np.clip((x - a) / (b - a), 0, 1))
+    # Larval proportions (5 dpf): behind the anus (~1.95 mm) the tail is laterally compressed,
+    # ~120-130 um wide and ~230 um deep (muscle), tapering to the notochord tip. Between the
+    # scan's last slice and the anus the trunk cross-section morphs into that shape. The dorsal
+    # edge stays continuous with the trunk and drops to the axis height at the tip.
+    z_anus = z_snout * um + 1950
+    bl0, bd0 = (ring0 @ lr2) / w0, (ring0 @ dv2 - off_dv) / h0
+    top0 = off_dv + h0
+    # Steer the tail tip onto the atlas midline (the scanned trunk angles ~50 um off it).
+    straight_tip = np.r_[c0 + dv2 * (top0 - 115), z_tip]
+    tip_atlas = R @ straight_tip + t
+    tip_atlas[0] = mid_x
+    lateral = np.linalg.solve(R, tip_atlas - t)[:2] - straight_tip[:2]
+    zs = np.linspace(z0_um, z_tip, 160)
+    rings, centres, halfh = [], [], []
+    for z in zs:
+        v_ = sstep(z0_um, z_anus, z)
+        blend = sstep(z0_um, z0_um + 250, z)
+        q = np.clip((z - z_anus) / (z_tip - z_anus), 0, 1)
+        wt = 52 * (1 - q) ** 0.8 + 10 * (1 - q)
+        ht = 115 * (1 - q) ** 0.7
+        w_abs, h_abs = (1 - v_) * w0 + v_ * wt, (1 - v_) * h0 + v_ * ht
+        top = top0 - 115 * sstep(z_anus, z_tip, z)  # dorsal edge
+        cdv = top - h_abs
+        bl = (1 - blend) * bl0 + blend * np.cos(th)
+        bd = (1 - blend) * bd0 + blend * np.sin(th)
+        shift = lateral * ((z - z0_um) / (z_tip - z0_um)) ** 2
+        cxy = c0 + shift + dv2 * cdv
+        rings.append(np.c_[cxy + np.outer(bl * w_abs, lr2) + np.outer(bd * h_abs, dv2), np.full(nth, z)])
+        centres.append(np.r_[cxy, z])
+        halfh.append(h_abs)
+    V = np.concatenate(rings + [np.array([[*centres[-1][:2], z_tip + 5]]), np.array([[*centres[0]]])])
+    F = []
+    for i in range(len(rings) - 1):
+        for j in range(nth):
+            a, b2, c, d2 = i * nth + j, i * nth + (j + 1) % nth, (i + 1) * nth + j, (i + 1) * nth + (j + 1) % nth
+            F += [(a, c, b2), (b2, c, d2)]
+    tip, start = len(V) - 2, len(V) - 1
+    last = (len(rings) - 1) * nth
+    F += [(last + j, tip, last + (j + 1) % nth) for j in range(nth)]
+    F += [(j, (j + 1) % nth, start) for j in range(nth)]
+    tail_v, tail_f = V, np.array(F)
+
+    # median fin fold: a thin (6 um) membrane in the midline plane, dorsal from the cut, ventral
+    # from ~1.9 mm (behind the anus), meeting in a rounded caudal fin beyond the body tip
+    fz = np.linspace(z0_um, z_fin_end, 160)
+    d_in, d_out, v_in, v_out, cen = [], [], [], [], []
+    for z in fz:
+        if z <= z_tip:
+            k = np.searchsorted(zs, z).clip(0, len(zs) - 1)
+            c, hh = centres[k], halfh[k]
+            fd = 95 * sstep(z0_um, z0_um + 200, z)
+            fv = 85 * sstep(z_anus - 50, z_anus + 150, z)
+            d_in.append(hh * 0.85); d_out.append(hh * 0.85 + fd)
+            v_in.append(-hh * 0.85); v_out.append(-hh * 0.85 - fv)
+        else:
+            c = centres[-1]
+            r = np.sqrt(max(0.0, 1 - ((z - z_tip) / (z_fin_end - z_tip)) ** 2))
+            d_in.append(0.0); d_out.append(95 * r)
+            v_in.append(0.0); v_out.append(-85 * r)
+        cen.append(np.r_[c[:2], z])
+    cen = np.array(cen)
+
+    def slab(lo, hi, ns=6, half=3.0):
+        """Thin closed membrane between DV offsets lo(z)..hi(z) around the tail axis."""
+        nz_ = len(fz)
+        V = []
+        for side in (-half, half):
+            for i in range(nz_):
+                for j in range(ns + 1):
+                    p = cen[i].copy()
+                    p[:2] += dv2 * (lo[i] + (hi[i] - lo[i]) * j / ns) + lr2 * side
+                    V.append(p)
+        idx = lambda sd, i, j: sd * nz_ * (ns + 1) + i * (ns + 1) + j
+        Fs = []
+        for i in range(nz_ - 1):
+            for j in range(ns):
+                a, b2, c, d2 = idx(0, i, j), idx(0, i, j + 1), idx(0, i + 1, j), idx(0, i + 1, j + 1)
+                Fs += [(a, b2, c), (b2, d2, c)]
+                a, b2, c, d2 = idx(1, i, j), idx(1, i, j + 1), idx(1, i + 1, j), idx(1, i + 1, j + 1)
+                Fs += [(a, c, b2), (b2, c, d2)]
+        rim = [(i, 0) for i in range(nz_)] + [(nz_ - 1, j) for j in range(ns + 1)] + \
+              [(i, ns) for i in range(nz_ - 1, -1, -1)] + [(0, j) for j in range(ns, -1, -1)]
+        for (i1, j1), (i2, j2) in zip(rim, rim[1:]):
+            a, b2, c, d2 = idx(0, i1, j1), idx(0, i2, j2), idx(1, i1, j1), idx(1, i2, j2)
+            Fs += [(a, c, b2), (b2, c, d2)]
+        return np.array(V), np.array(Fs)
+
+    dv_, df_ = slab(np.array(d_in), np.array(d_out))
+    vv_, vf_ = slab(np.array(v_out), np.array(v_in))
+    fin_v, fin_f = np.concatenate([dv_, vv_]), np.concatenate([df_, vf_ + len(dv_)])
+    log(f"tail: from {z0_um:.0f} um to body tip {z_tip:.0f} um, fin to {z_fin_end:.0f} um (CT space, snout at {z_snout * um:.0f})")
+
     # ---- 5. meshes in atlas space
-    meta = {"scale": s, "R": R.tolist(), "t": t.tolist(), "rms_um": err, "ct_voxel_um": um}
-    for name, mask, sigma in (("fish_body", solid, 1.5), ("swim_bladder", bladder, 1.0)):
-        if not mask.any():
-            continue
-        v, fc = mesh_from_mask(mask, um, sigma)
-        v = s * v[:, ::-1] @ R.T + t
+    meta = {"affine_A": R.tolist(), "affine_b": t.tolist(), "stretch": sv.tolist(), "ct_voxel_um": um,
+            "note": "atlas_um = A @ ct_um(x,y,z) + b"}
+    parts = []
+    for name, mask, sigma in (("fish_body", solid, 1.5), ("swim_bladder", bladder, 1.0),
+                              ("eyes", eyes, 1.0), ("lenses", lens_mask, 0.8)):
+        if mask.any():
+            v, fc = mesh_from_mask(mask, um, sigma)
+            if name == "fish_body":
+                # drop the flat end cap where the scan stops; the tail continues from this slice
+                fc = fc[~np.all(v[fc][:, :, 0] > z0_um + 0.5 * um, axis=1)]
+            parts.append((name, v[:, ::-1], fc))  # (x, y, z) CT um
+    parts += [("fish_tail", tail_v, tail_f), ("fin_fold", fin_v, fin_f)]
+    for name, v, fc in parts:
+        v = v @ R.T + t
         write_stl(os.path.join(out_dir, f"{name}.stl"), v, fc)
         meta[name] = {"triangles": int(len(fc)), "min": v.min(0).round(1).tolist(), "max": v.max(0).round(1).tolist()}
         log(f"{name}: {len(fc)} triangles, atlas-space bbox {v.min(0).round(0)} .. {v.max(0).round(0)}")

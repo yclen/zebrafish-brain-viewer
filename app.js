@@ -266,7 +266,10 @@ let fish = null; // { meshes, box, radius }
 const FISH_MATERIALS = {
   fish_body: { color: '#e9dcc8', opacity: 0.17, order: 11 },
   fish_tail: { color: '#e9dcc8', opacity: 0.17, order: 11 },
+  fin_fold: { color: '#e9dcc8', opacity: 0.14, order: 12 },
   swim_bladder: { color: '#d4dde8', opacity: 0.5, order: 6, metalness: 0.35 },
+  eyes: { color: '#3a3530', opacity: 0.35, order: 9 },
+  lenses: { color: '#eef3f8', opacity: 0.75, order: 8, metalness: 0.2 },
 };
 async function loadFish() {
   if (fish) return fish;
