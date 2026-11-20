@@ -1,0 +1,1384 @@
+{
+ "source": "mapZebrain (mapzebrain.org), region annotation version 2.0 (MECE, 2024); Kunst et al. 2019, Neuron 103:21-38",
+ "units": "micrometres, larval zebrafish at 6 days post-fertilization",
+ "axes": {
+  "x": "left-right",
+  "y": "anterior (low) to posterior (high)",
+  "z": "ventral (low) to dorsal (high)"
+ },
+ "outlineMesh": "0",
+ "regions": [
+  {
+   "id": 1102,
+   "name": "prosencephalon (forebrain)",
+   "parent": null,
+   "depth": 0,
+   "children": [
+    1142,
+    1098,
+    1106,
+    1051,
+    1061,
+    1135,
+    1053,
+    1127,
+    1153,
+    1154
+   ],
+   "color": "#CDEEA8",
+   "hasMesh": true,
+   "division": "forebrain",
+   "description": "The front of the three primary brain divisions. It contains the telencephalon (smell, learning, emotion-like states, action selection) and the diencephalon (hypothalamus, thalamus, pretectum, habenula, pineal), which together handle body state, hormones and much of the early processing of light and vision."
+  },
+  {
+   "id": 1142,
+   "name": "telencephalon",
+   "parent": 1102,
+   "depth": 1,
+   "children": [
+    1139,
+    1078,
+    1046
+   ],
+   "color": "#525647",
+   "hasMesh": true,
+   "division": "forebrain",
+   "description": "The front end of the brain. In fish it develops by folding outward (eversion) rather than inward like the mammalian cortex, so its 'cortex-like' part sits on top. It combines smell with other senses and supports learning and motivated behaviour."
+  },
+  {
+   "id": 1139,
+   "name": "olfactory bulb",
+   "parent": 1142,
+   "depth": 2,
+   "children": [],
+   "color": "#DEE1B6",
+   "hasMesh": true,
+   "division": "forebrain",
+   "description": "First relay station for smell. Axons from odour-sensing neurons in the nose end here in small clusters (glomeruli), each tuned to particular odour molecules; the bulb then sends odour information on to the telencephalon, hypothalamus and habenula."
+  },
+  {
+   "id": 1078,
+   "name": "pallium (dorsal telencephalon)",
+   "parent": 1142,
+   "depth": 2,
+   "children": [],
+   "color": "#8A7E55",
+   "hasMesh": true,
+   "division": "forebrain",
+   "description": "The dorsal telencephalon, the fish counterpart of the mammalian cortex, hippocampus and amygdala. In adult fish the lateral pallium is linked to spatial learning (hippocampus-like) and the medial pallium to emotional/avoidance learning (amygdala-like). In larvae it is still maturing but already responds to sensory input and is involved in learned and social behaviour."
+  },
+  {
+   "id": 1046,
+   "name": "subpallium (ventral telencephalon)",
+   "parent": 1142,
+   "depth": 2,
+   "children": [],
+   "color": "#598168",
+   "hasMesh": true,
+   "division": "forebrain",
+   "description": "The ventral telencephalon, comparable to the mammalian basal ganglia and septum (striatum, pallidum). It is thought to help select and motivate actions, and contains inhibitory (GABAergic) and neuromodulatory neurons."
+  },
+  {
+   "id": 1098,
+   "name": "hypothalamus",
+   "parent": 1102,
+   "depth": 1,
+   "children": [
+    1121,
+    1112,
+    1107,
+    1047,
+    1044
+   ],
+   "color": "#BF7085",
+   "hasMesh": true,
+   "division": "forebrain",
+   "description": "Master controller of internal state: hunger and satiety, stress, sleep and arousal, growth and reproduction. It works through neuropeptides and by commanding the pituitary gland, and in fish it also includes the large inferior lobe involved in feeding."
+  },
+  {
+   "id": 1121,
+   "name": "rostral hypothalamus",
+   "parent": 1098,
+   "depth": 2,
+   "children": [],
+   "color": "#B8088C",
+   "hasMesh": true,
+   "division": "forebrain",
+   "description": "Front part of the hypothalamus. It contains neuroendocrine and neuromodulatory cell groups, including the hypocretin (orexin) neurons that promote wakefulness in larval zebrafish."
+  },
+  {
+   "id": 1112,
+   "name": "intermediate hypothalamus (entire)",
+   "parent": 1098,
+   "depth": 2,
+   "children": [
+    1077,
+    1079
+   ],
+   "color": "#2D5FBB",
+   "hasMesh": true,
+   "division": "forebrain",
+   "description": "The middle hypothalamus, including the fish-specific inferior lobe. Neurons here respond to prey-like visual stimuli and to food, and activity in this area tracks hunger and feeding behaviour."
+  },
+  {
+   "id": 1077,
+   "name": "intermediate hypothalamus (remaining)",
+   "parent": 1112,
+   "depth": 3,
+   "children": [],
+   "color": "#57DBFA",
+   "hasMesh": true,
+   "division": "forebrain",
+   "description": "The remainder of the intermediate hypothalamus, including the zones lining the third ventricle that contain appetite-regulating neuropeptide neurons (counterparts of the mammalian arcuate nucleus)."
+  },
+  {
+   "id": 1079,
+   "name": "diffuse nucleus of the inferior lobe",
+   "parent": 1112,
+   "depth": 3,
+   "children": [],
+   "color": "#7D11DB",
+   "hasMesh": true,
+   "division": "forebrain",
+   "description": "Part of the fish inferior lobe. It receives visual input relayed from the pretectum as well as taste-related input, and is implicated in feeding and prey-directed behaviour."
+  },
+  {
+   "id": 1107,
+   "name": "caudal hypothalamus",
+   "parent": 1098,
+   "depth": 2,
+   "children": [],
+   "color": "#C9D79D",
+   "hasMesh": true,
+   "division": "forebrain",
+   "description": "Back part of the hypothalamus, around the posterior recess. It contains dopaminergic and serotonergic neurons that modulate arousal, locomotion and feeding."
+  },
+  {
+   "id": 1047,
+   "name": "pituitary (hypophysis)",
+   "parent": 1098,
+   "depth": 2,
+   "children": [],
+   "color": "#83F41D",
+   "hasMesh": true,
+   "division": "forebrain",
+   "description": "The body's master endocrine gland. Under hypothalamic control it releases hormones such as ACTH (stress / cortisol), growth hormone, prolactin, thyroid-stimulating hormone and the gonadotropins."
+  },
+  {
+   "id": 1044,
+   "name": "preoptic area",
+   "parent": 1098,
+   "depth": 2,
+   "children": [
+    1117,
+    1075
+   ],
+   "color": "#88969A",
+   "hasMesh": true,
+   "division": "forebrain",
+   "description": "Contains the neurosecretory preoptic nucleus, which makes oxytocin, vasopressin (isotocin/vasotocin in fish) and CRH. It drives the stress-hormone axis and influences social behaviour and body-fluid balance. Retinal arborization fields AF1 and AF2 sit inside it."
+  },
+  {
+   "id": 1117,
+   "name": "retinal arborization field 1",
+   "parent": 1044,
+   "depth": 3,
+   "children": [],
+   "color": "#00FFFF",
+   "hasMesh": true,
+   "division": "forebrain",
+   "description": "Retinal arborization field 1 (AF1): one of ten zones where retinal ganglion-cell axons end. AF1-AF9 lie outside the tectum and mostly serve non-image-forming and reflexive visual functions; the roles of individual fields are still being worked out."
+  },
+  {
+   "id": 1075,
+   "name": "retinal arborization field 2",
+   "parent": 1044,
+   "depth": 3,
+   "children": [],
+   "color": "#FF00FF",
+   "hasMesh": true,
+   "division": "forebrain",
+   "description": "Retinal arborization field 2 (AF2): one of ten zones where retinal ganglion-cell axons end. AF1-AF9 lie outside the tectum and mostly serve non-image-forming and reflexive visual functions; the roles of individual fields are still being worked out."
+  },
+  {
+   "id": 1106,
+   "name": "posterior tuberculum, anterior part (basal prosomere 3, ventral posterior tuberculum)",
+   "parent": 1102,
+   "depth": 1,
+   "children": [],
+   "color": "#BFEDBB",
+   "hasMesh": true,
+   "division": "forebrain",
+   "description": "Basal diencephalon. Contains dopaminergic neuron clusters whose long axons descend to the hindbrain and spinal cord, where they modulate how readily the larva swims (comparable to the mammalian A11 group)."
+  },
+  {
+   "id": 1051,
+   "name": "retina",
+   "parent": 1102,
+   "depth": 1,
+   "children": [],
+   "color": "#15629A",
+   "hasMesh": true,
+   "division": "forebrain",
+   "description": "The light-sensing part of the eye and, developmentally, an outgrowth of the brain. Photoreceptors feed bipolar cells, which feed retinal ganglion cells; ganglion-cell axons form the optic nerve and end in ten 'arborization fields' (AF1-AF10), the largest being the optic tectum (AF10)."
+  },
+  {
+   "id": 1061,
+   "name": "eminentia thalami",
+   "parent": 1102,
+   "depth": 1,
+   "children": [
+    1100,
+    1103
+   ],
+   "color": "#F312CD",
+   "hasMesh": true,
+   "division": "forebrain",
+   "description": "A small region between the thalamus and the telencephalon. Its ventral entopeduncular nucleus sends input to the habenula."
+  },
+  {
+   "id": 1100,
+   "name": "ventral entopeduncular nucleus",
+   "parent": 1061,
+   "depth": 2,
+   "children": [],
+   "color": "#9E65A9",
+   "hasMesh": true,
+   "division": "forebrain",
+   "description": "Projects to the habenula, much like the mammalian entopeduncular nucleus / internal globus pallidus that passes reward- and punishment-related signals to the lateral habenula."
+  },
+  {
+   "id": 1103,
+   "name": "eminentia thalami (remaining)",
+   "parent": 1061,
+   "depth": 2,
+   "children": [],
+   "color": "#4F3D3C",
+   "hasMesh": true,
+   "division": "forebrain",
+   "description": "The rest of the eminentia thalami outside the ventral entopeduncular nucleus."
+  },
+  {
+   "id": 1135,
+   "name": "prethalamus (alar prosomere 3, ventral thalamus)",
+   "parent": 1102,
+   "depth": 1,
+   "children": [
+    1084
+   ],
+   "color": "#0F5056",
+   "hasMesh": true,
+   "division": "forebrain",
+   "description": "Also called the ventral thalamus. Mostly inhibitory (GABAergic) neurons, comparable to the mammalian zona incerta and thalamic reticular nucleus, which shape and gate sensory signals. Contains retinal arborization field AF3."
+  },
+  {
+   "id": 1084,
+   "name": "retinal arborization field 3",
+   "parent": 1135,
+   "depth": 2,
+   "children": [],
+   "color": "#FF0000",
+   "hasMesh": true,
+   "division": "forebrain",
+   "description": "Retinal arborization field 3 (AF3): one of ten zones where retinal ganglion-cell axons end. AF1-AF9 lie outside the tectum and mostly serve non-image-forming and reflexive visual functions; the roles of individual fields are still being worked out."
+  },
+  {
+   "id": 1053,
+   "name": "thalamus (alar prosomere 2, dorsal thalamus)",
+   "parent": 1102,
+   "depth": 1,
+   "children": [
+    1060,
+    1063,
+    1045
+   ],
+   "color": "#951FF8",
+   "hasMesh": true,
+   "division": "forebrain",
+   "description": "Relays and filters sensory signals, especially visual ones, and passes them to the telencephalon and other areas. This parent region also includes the pineal complex and the habenula (the epithalamus)."
+  },
+  {
+   "id": 1060,
+   "name": "pineal complex (epiphysis)",
+   "parent": 1053,
+   "depth": 2,
+   "children": [],
+   "color": "#5ABF74",
+   "hasMesh": true,
+   "division": "forebrain",
+   "description": "A light-sensitive organ on top of the brain that produces melatonin at night, helping set circadian (day/night) rhythms and sleep."
+  },
+  {
+   "id": 1063,
+   "name": "habenula",
+   "parent": 1053,
+   "depth": 2,
+   "children": [
+    1067,
+    1116
+   ],
+   "color": "#DE9ADC",
+   "hasMesh": true,
+   "division": "forebrain",
+   "description": "A hub that links the forebrain to the brainstem's neuromodulatory centres (interpeduncular nucleus, raphe) through the fasciculus retroflexus. It is involved in fear and anxiety, coping with stress, and switching between behavioural strategies. It is left-right asymmetric in zebrafish."
+  },
+  {
+   "id": 1067,
+   "name": "dorsal habenula",
+   "parent": 1063,
+   "depth": 3,
+   "children": [],
+   "color": "#DAAF15",
+   "hasMesh": true,
+   "division": "forebrain",
+   "description": "Equivalent of the mammalian medial habenula. Left and right sides differ in size and inputs (e.g. light versus odour). It projects to the interpeduncular nucleus and is linked to fear responses and anxiety-like behaviour."
+  },
+  {
+   "id": 1116,
+   "name": "ventral habenula",
+   "parent": 1063,
+   "depth": 3,
+   "children": [],
+   "color": "#5A0670",
+   "hasMesh": true,
+   "division": "forebrain",
+   "description": "Equivalent of the mammalian lateral habenula. It signals worse-than-expected outcomes and, through the raphe, can push behaviour from active coping toward passivity."
+  },
+  {
+   "id": 1045,
+   "name": "thalamus proper",
+   "parent": 1053,
+   "depth": 2,
+   "children": [
+    1083
+   ],
+   "color": "#506E6A",
+   "hasMesh": true,
+   "division": "forebrain",
+   "description": "The thalamic nuclei proper. They relay visual and other sensory information onward; some respond to looming (approaching-object) stimuli and changes in light. Contains retinal arborization field AF4."
+  },
+  {
+   "id": 1083,
+   "name": "retinal arborization field 4",
+   "parent": 1045,
+   "depth": 3,
+   "children": [],
+   "color": "#0000FF",
+   "hasMesh": true,
+   "division": "forebrain",
+   "description": "Retinal arborization field 4 (AF4): one of ten zones where retinal ganglion-cell axons end. AF1-AF9 lie outside the tectum and mostly serve non-image-forming and reflexive visual functions; the roles of individual fields are still being worked out."
+  },
+  {
+   "id": 1127,
+   "name": "pretectum (alar prosomere 1)",
+   "parent": 1102,
+   "depth": 1,
+   "children": [
+    1076,
+    1115,
+    1128,
+    1119,
+    1126
+   ],
+   "color": "#684E9B",
+   "hasMesh": true,
+   "division": "forebrain",
+   "description": "A visual area that receives direct retinal input (AF5-AF9). It detects whole-field motion and drives the optomotor response (swimming to hold position in a flow) and the optokinetic eye movements that stabilize the image on the retina; it also contributes to prey detection."
+  },
+  {
+   "id": 1076,
+   "name": "retinal arborization field 5",
+   "parent": 1127,
+   "depth": 2,
+   "children": [],
+   "color": "#00FF00",
+   "hasMesh": true,
+   "division": "forebrain",
+   "description": "Retinal arborization field 5 (AF5): one of ten zones where retinal ganglion-cell axons end. AF1-AF9 lie outside the tectum and mostly serve non-image-forming and reflexive visual functions; the roles of individual fields are still being worked out."
+  },
+  {
+   "id": 1115,
+   "name": "retinal arborization field 6",
+   "parent": 1127,
+   "depth": 2,
+   "children": [],
+   "color": "#FF0000",
+   "hasMesh": true,
+   "division": "forebrain",
+   "description": "Retinal arborization field 6 (AF6): one of ten zones where retinal ganglion-cell axons end. AF1-AF9 lie outside the tectum and mostly serve non-image-forming and reflexive visual functions; the roles of individual fields are still being worked out."
+  },
+  {
+   "id": 1128,
+   "name": "retinal arborization field 7",
+   "parent": 1127,
+   "depth": 2,
+   "children": [],
+   "color": "#00FFFF",
+   "hasMesh": true,
+   "division": "forebrain",
+   "description": "Retinal arborization field 7 (AF7): one of ten zones where retinal ganglion-cell axons end. AF1-AF9 lie outside the tectum and mostly serve non-image-forming and reflexive visual functions; the roles of individual fields are still being worked out. AF7 is best known for responding to small, prey-like moving objects, and helps trigger hunting."
+  },
+  {
+   "id": 1119,
+   "name": "retinal arborization field 8",
+   "parent": 1127,
+   "depth": 2,
+   "children": [],
+   "color": "#FF00FF",
+   "hasMesh": true,
+   "division": "forebrain",
+   "description": "Retinal arborization field 8 (AF8): one of ten zones where retinal ganglion-cell axons end. AF1-AF9 lie outside the tectum and mostly serve non-image-forming and reflexive visual functions; the roles of individual fields are still being worked out."
+  },
+  {
+   "id": 1126,
+   "name": "retinal arborization field 9",
+   "parent": 1127,
+   "depth": 2,
+   "children": [],
+   "color": "#FFFF00",
+   "hasMesh": true,
+   "division": "forebrain",
+   "description": "Retinal arborization field 9 (AF9): one of ten zones where retinal ganglion-cell axons end. AF1-AF9 lie outside the tectum and mostly serve non-image-forming and reflexive visual functions; the roles of individual fields are still being worked out."
+  },
+  {
+   "id": 1153,
+   "name": "posterior tuberculum, posterior part (basal prosomere 2, dorsal posterior tuberculum)",
+   "parent": 1102,
+   "depth": 1,
+   "children": [],
+   "color": "#D11FF8",
+   "hasMesh": false,
+   "division": "forebrain",
+   "description": "The back part of the posterior tuberculum (basal prosomere 2). It is part of the basal diencephalon that contains dopaminergic neurons. (No 3D mesh is provided for this region in the current atlas version.)"
+  },
+  {
+   "id": 1154,
+   "name": "region of the nucleus of the medial longitudinal fascicle (basal prosomere 1)",
+   "parent": 1102,
+   "depth": 1,
+   "children": [
+    1155
+   ],
+   "color": "#1FF86E",
+   "hasMesh": false,
+   "division": "forebrain",
+   "description": "The area around the nucleus of the medial longitudinal fascicle (basal prosomere 1). (No 3D mesh is provided for this region in the current atlas version.)"
+  },
+  {
+   "id": 1155,
+   "name": "nucleus of the medial longitudinal fascicle",
+   "parent": 1154,
+   "depth": 2,
+   "children": [],
+   "color": "#1FF86E",
+   "hasMesh": false,
+   "division": "forebrain",
+   "description": "A cluster of large reticulospinal neurons that project to the spinal cord and control swim speed and posture, and help steer. (No 3D mesh is provided for this region in the current atlas version.)"
+  },
+  {
+   "id": 1130,
+   "name": "mesencephalon (midbrain)",
+   "parent": null,
+   "depth": 0,
+   "children": [
+    1049,
+    1080
+   ],
+   "color": "#7C404F",
+   "hasMesh": true,
+   "division": "midbrain",
+   "description": "The middle of the three primary brain divisions. It contains the optic tectum (the main visual centre), the tori (hearing/lateral line and vision-related) and the tegmentum (motor control, including eye movements)."
+  },
+  {
+   "id": 1049,
+   "name": "tegmentum (midbrain tegmentum)",
+   "parent": 1130,
+   "depth": 1,
+   "children": [
+    1122,
+    1131
+   ],
+   "color": "#38B82D",
+   "hasMesh": true,
+   "division": "midbrain",
+   "description": "The ventral midbrain. It contains motor nuclei for the eyes and premotor neurons that help start and steer swimming."
+  },
+  {
+   "id": 1122,
+   "name": "medial tegmentum (entire)",
+   "parent": 1049,
+   "depth": 2,
+   "children": [
+    1129,
+    1137
+   ],
+   "color": "#C1ED6B",
+   "hasMesh": true,
+   "division": "midbrain",
+   "description": "Medial tegmentum, including the oculomotor nucleus."
+  },
+  {
+   "id": 1129,
+   "name": "medial tegmentum (remaining)",
+   "parent": 1122,
+   "depth": 3,
+   "children": [],
+   "color": "#5B4778",
+   "hasMesh": true,
+   "division": "midbrain",
+   "description": "The rest of the medial tegmentum: premotor and reticular neurons that contribute to locomotion and eye-movement control."
+  },
+  {
+   "id": 1137,
+   "name": "oculomotor nucleus",
+   "parent": 1122,
+   "depth": 3,
+   "children": [],
+   "color": "#AA6B66",
+   "hasMesh": true,
+   "division": "midbrain",
+   "description": "Cranial nerve III motor neurons. They drive most of the eye muscles, including the inward eye rotation (convergence) larvae use to lock on to prey during hunting."
+  },
+  {
+   "id": 1131,
+   "name": "lateral tegmentum",
+   "parent": 1049,
+   "depth": 2,
+   "children": [],
+   "color": "#B9AD21",
+   "hasMesh": true,
+   "division": "midbrain",
+   "description": "Lateral midbrain tegmentum, containing premotor and relay neurons involved in movement control."
+  },
+  {
+   "id": 1080,
+   "name": "tectum & tori",
+   "parent": 1130,
+   "depth": 1,
+   "children": [
+    1088,
+    1097,
+    1113
+   ],
+   "color": "#EDDAE6",
+   "hasMesh": true,
+   "division": "midbrain",
+   "description": "The roof of the midbrain: the optic tectum plus the torus longitudinalis and torus semicircularis."
+  },
+  {
+   "id": 1088,
+   "name": "torus longitudinalis",
+   "parent": 1080,
+   "depth": 2,
+   "children": [],
+   "color": "#B1E73A",
+   "hasMesh": true,
+   "division": "midbrain",
+   "description": "A fish-specific ridge along the tectum's midline. It sends input to the tectum's outermost layer and is thought to help with visual processing such as anticipating changes caused by the fish's own movements."
+  },
+  {
+   "id": 1097,
+   "name": "tectum",
+   "parent": 1080,
+   "depth": 2,
+   "children": [
+    1087,
+    1095
+   ],
+   "color": "#028FA8",
+   "hasMesh": true,
+   "division": "midbrain",
+   "description": "The optic tectum (counterpart of the mammalian superior colliculus) is the largest visual centre. It holds a map of visual space and detects prey (small moving dots) and threats (looming shapes), then triggers orienting or escape."
+  },
+  {
+   "id": 1087,
+   "name": "tectum neuropil",
+   "parent": 1097,
+   "depth": 3,
+   "children": [
+    1054,
+    1073,
+    1094,
+    1118,
+    1123,
+    1140,
+    1146
+   ],
+   "color": "#CCCCCC",
+   "hasMesh": true,
+   "division": "midbrain",
+   "description": "The layered sheet of fibres and synapses in the tectum (retinal arborization field AF10), where most retinal ganglion-cell axons end. Different layers receive different types of visual information."
+  },
+  {
+   "id": 1054,
+   "name": "boundary zone between SFGS and SGC",
+   "parent": 1087,
+   "depth": 4,
+   "children": [],
+   "color": "#57BEF9",
+   "hasMesh": true,
+   "division": "midbrain",
+   "description": "The boundary zone between the SFGS and SGC layers of the tectal neuropil."
+  },
+  {
+   "id": 1073,
+   "name": "stratum opticum (SO)",
+   "parent": 1087,
+   "depth": 4,
+   "children": [],
+   "color": "#377187",
+   "hasMesh": true,
+   "division": "midbrain",
+   "description": "The outermost fibre layer of the tectum: incoming retinal axons running toward their target layers."
+  },
+  {
+   "id": 1094,
+   "name": "stratum fibrosum et griseum superficiale (SFGS)",
+   "parent": 1087,
+   "depth": 4,
+   "children": [],
+   "color": "#4CD5F1",
+   "hasMesh": true,
+   "division": "midbrain",
+   "description": "The main retinal input layer of the tectum, subdivided into sublayers that receive different visual features (e.g. direction, size)."
+  },
+  {
+   "id": 1118,
+   "name": "stratum marginale (SM)",
+   "parent": 1087,
+   "depth": 4,
+   "children": [],
+   "color": "#ABB203",
+   "hasMesh": true,
+   "division": "midbrain",
+   "description": "The outermost tectal layer, which receives input from the torus longitudinalis rather than the retina."
+  },
+  {
+   "id": 1123,
+   "name": "boundary zone between SAC and periventricular layer",
+   "parent": 1087,
+   "depth": 4,
+   "children": [],
+   "color": "#46B85E",
+   "hasMesh": true,
+   "division": "midbrain",
+   "description": "The boundary zone between the SAC layer and the periventricular cell layer of the tectum."
+  },
+  {
+   "id": 1140,
+   "name": "stratum album centrale (SAC)",
+   "parent": 1087,
+   "depth": 4,
+   "children": [],
+   "color": "#D49BDB",
+   "hasMesh": true,
+   "division": "midbrain",
+   "description": "A deep tectal layer of fibres. It includes outputs leaving the tectum and inputs from other brain areas."
+  },
+  {
+   "id": 1146,
+   "name": "stratum griseum centrale (SGC)",
+   "parent": 1087,
+   "depth": 4,
+   "children": [],
+   "color": "#04DDDC",
+   "hasMesh": true,
+   "division": "midbrain",
+   "description": "A deep tectal layer with retinal input and the dendrites of tectal neurons that send output toward premotor areas."
+  },
+  {
+   "id": 1095,
+   "name": "periventricular layer",
+   "parent": 1097,
+   "depth": 3,
+   "children": [],
+   "color": "#ECB535",
+   "hasMesh": true,
+   "division": "midbrain",
+   "description": "The tectum's cell-body layer. Its densely packed periventricular neurons extend dendrites into the neuropil and perform most of the tectum's computations."
+  },
+  {
+   "id": 1113,
+   "name": "torus semicircularis",
+   "parent": 1080,
+   "depth": 2,
+   "children": [],
+   "color": "#750368",
+   "hasMesh": true,
+   "division": "midbrain",
+   "description": "The main auditory and lateral-line (water-movement sense) centre of the midbrain, comparable to the mammalian inferior colliculus."
+  },
+  {
+   "id": 1148,
+   "name": "rhombencephalon (hindbrain)",
+   "parent": null,
+   "depth": 0,
+   "children": [
+    1085,
+    1096
+   ],
+   "color": "#EDDAC7",
+   "hasMesh": true,
+   "division": "hindbrain",
+   "description": "The back of the three primary brain divisions, made of the cerebellum and the medulla oblongata. It holds the cranial-nerve nuclei, the escape circuit (Mauthner cells), the rhythm generators for swimming and eye movements, and the major neuromodulatory nuclei (raphe, locus coeruleus)."
+  },
+  {
+   "id": 1085,
+   "name": "cerebellum",
+   "parent": 1148,
+   "depth": 1,
+   "children": [],
+   "color": "#3C00B1",
+   "hasMesh": true,
+   "division": "hindbrain",
+   "description": "Coordinates and fine-tunes movements and learns from errors: for example, adjusting swimming and eye movements, and contributing to classical (fear) conditioning. It receives 'error' signals from the inferior olive."
+  },
+  {
+   "id": 1096,
+   "name": "medulla oblongata",
+   "parent": 1148,
+   "depth": 1,
+   "children": [
+    1068,
+    1143,
+    1104
+   ],
+   "color": "#B2DD42",
+   "hasMesh": true,
+   "division": "hindbrain",
+   "description": "The brainstem proper. It contains cranial-nerve motor and sensory nuclei, the reticular formation (including the reticulospinal neurons that command swimming and escape, such as the Mauthner cells), and centres that control autonomic functions such as heart rate."
+  },
+  {
+   "id": 1068,
+   "name": "superior medulla oblongata",
+   "parent": 1096,
+   "depth": 2,
+   "children": [
+    1065,
+    1134
+   ],
+   "color": "#2C80AF",
+   "hasMesh": true,
+   "division": "hindbrain",
+   "description": "The front (rostral) part of the medulla oblongata, including the isthmus region with the raphe, locus coeruleus, nucleus isthmi and the trigeminal and trochlear motor nuclei."
+  },
+  {
+   "id": 1065,
+   "name": "superior dorsal medulla oblongata",
+   "parent": 1068,
+   "depth": 3,
+   "children": [
+    1093,
+    1124,
+    1066,
+    1058,
+    1072
+   ],
+   "color": "#ACF2CC",
+   "hasMesh": true,
+   "division": "hindbrain",
+   "description": "The dorsal (sensory and stripe) part of the rostral medulla."
+  },
+  {
+   "id": 1093,
+   "name": "superior dorsal medulla oblongata stripe 1 (entire)",
+   "parent": 1065,
+   "depth": 4,
+   "children": [
+    1062,
+    1099
+   ],
+   "color": "#5570C8",
+   "hasMesh": true,
+   "division": "hindbrain",
+   "description": "Stripe 1 of the rostral dorsal medulla, including the trochlear motor nucleus."
+  },
+  {
+   "id": 1062,
+   "name": "trochlear motor nucleus",
+   "parent": 1093,
+   "depth": 5,
+   "children": [],
+   "color": "#C5074C",
+   "hasMesh": true,
+   "division": "hindbrain",
+   "description": "Cranial nerve IV motor neurons, which control the superior oblique eye muscle (eye rotation and depression)."
+  },
+  {
+   "id": 1099,
+   "name": "superior dorsal medulla oblongata stripe 1 (remaining)",
+   "parent": 1093,
+   "depth": 5,
+   "children": [],
+   "color": "#79273A",
+   "hasMesh": true,
+   "division": "hindbrain",
+   "description": "One of the longitudinal stripes of the superior dorsal medulla. Hindbrain neurons are arranged in stripes by transmitter type and developmental age. The dorsal stripes include sensory and premotor neurons; this stripe is an anatomical landmark rather than a single functional unit."
+  },
+  {
+   "id": 1124,
+   "name": "superior dorsal medulla oblongata stripe 2&3",
+   "parent": 1065,
+   "depth": 4,
+   "children": [],
+   "color": "#0BE68E",
+   "hasMesh": true,
+   "division": "hindbrain",
+   "description": "One of the longitudinal stripes of the superior dorsal medulla. Hindbrain neurons are arranged in stripes by transmitter type and developmental age. The dorsal stripes include sensory and premotor neurons; this stripe is an anatomical landmark rather than a single functional unit."
+  },
+  {
+   "id": 1066,
+   "name": "superior dorsal medulla oblongata stripe 4",
+   "parent": 1065,
+   "depth": 4,
+   "children": [],
+   "color": "#295458",
+   "hasMesh": true,
+   "division": "hindbrain",
+   "description": "One of the longitudinal stripes of the superior dorsal medulla. Hindbrain neurons are arranged in stripes by transmitter type and developmental age. The dorsal stripes include sensory and premotor neurons; this stripe is an anatomical landmark rather than a single functional unit."
+  },
+  {
+   "id": 1058,
+   "name": "superior dorsal medulla oblongata stripe 5",
+   "parent": 1065,
+   "depth": 4,
+   "children": [],
+   "color": "#E218A9",
+   "hasMesh": true,
+   "division": "hindbrain",
+   "description": "One of the longitudinal stripes of the superior dorsal medulla. Hindbrain neurons are arranged in stripes by transmitter type and developmental age. The dorsal stripes include sensory and premotor neurons; this stripe is an anatomical landmark rather than a single functional unit."
+  },
+  {
+   "id": 1072,
+   "name": "medial octavolateralis nucleus",
+   "parent": 1065,
+   "depth": 4,
+   "children": [],
+   "color": "#75F637",
+   "hasMesh": true,
+   "division": "hindbrain",
+   "description": "The first relay for lateral-line input: it processes the water-movement signals detected by neuromasts along the head and body."
+  },
+  {
+   "id": 1134,
+   "name": "superior ventral medulla oblongata (entire)",
+   "parent": 1068,
+   "depth": 3,
+   "children": [
+    1089,
+    1092,
+    1120,
+    1138,
+    1144,
+    1145,
+    1147
+   ],
+   "color": "#6BE0F4",
+   "hasMesh": true,
+   "division": "hindbrain",
+   "description": "The ventral part of the rostral medulla: the raphe, locus coeruleus, interpeduncular nucleus, nucleus isthmi, trigeminal motor nuclei and surrounding reticular neurons."
+  },
+  {
+   "id": 1089,
+   "name": "anterior (dorsal) trigeminal motor nucleus",
+   "parent": 1134,
+   "depth": 4,
+   "children": [],
+   "color": "#C403C2",
+   "hasMesh": true,
+   "division": "hindbrain",
+   "description": "Part of the cranial nerve V motor nucleus, which controls jaw muscles for feeding (suction capture of prey)."
+  },
+  {
+   "id": 1092,
+   "name": "superior raphe",
+   "parent": 1134,
+   "depth": 4,
+   "children": [],
+   "color": "#ECFAB5",
+   "hasMesh": true,
+   "division": "hindbrain",
+   "description": "The main serotonergic (5-HT) nucleus, comparable to the mammalian dorsal raphe. It sends serotonin widely across the brain and regulates arousal, sleep, feeding state and switching between exploring and exploiting."
+  },
+  {
+   "id": 1120,
+   "name": "interpeduncular nucleus",
+   "parent": 1134,
+   "depth": 4,
+   "children": [],
+   "color": "#24C77A",
+   "hasMesh": true,
+   "division": "hindbrain",
+   "description": "The main target of the dorsal habenula. It regulates anxiety-like behaviour, locomotion and connections with the raphe."
+  },
+  {
+   "id": 1138,
+   "name": "locus coeruleus",
+   "parent": 1134,
+   "depth": 4,
+   "children": [],
+   "color": "#B7F3AF",
+   "hasMesh": true,
+   "division": "hindbrain",
+   "description": "A small noradrenergic nucleus that sends noradrenaline throughout the brain. It controls arousal and alertness, and in larvae it helps signal when effort is futile so that the animal gives up and stops swimming."
+  },
+  {
+   "id": 1144,
+   "name": "posterior (ventral) trigeminal motor nucleus",
+   "parent": 1134,
+   "depth": 4,
+   "children": [],
+   "color": "#B26823",
+   "hasMesh": true,
+   "division": "hindbrain",
+   "description": "Part of the cranial nerve V motor nucleus, which controls jaw muscles for feeding."
+  },
+  {
+   "id": 1145,
+   "name": "superior ventral medulla oblongata (remaining)",
+   "parent": 1134,
+   "depth": 4,
+   "children": [],
+   "color": "#94DE4A",
+   "hasMesh": true,
+   "division": "hindbrain",
+   "description": "The remainder of the rostral ventral medulla, mainly reticular neurons."
+  },
+  {
+   "id": 1147,
+   "name": "nucleus isthmi",
+   "parent": 1134,
+   "depth": 4,
+   "children": [
+    1149,
+    1150,
+    1151,
+    1152
+   ],
+   "color": "#E31D81",
+   "hasMesh": true,
+   "division": "hindbrain",
+   "description": "Connected back and forth with the optic tectum. It is thought to support visual attention, selecting which stimulus to respond to (comparable to the mammalian parabigeminal nucleus)."
+  },
+  {
+   "id": 1149,
+   "name": "glutamatergic domain of the nucleus isthmi",
+   "parent": 1147,
+   "depth": 5,
+   "children": [],
+   "color": "#E48F90",
+   "hasMesh": true,
+   "division": "hindbrain",
+   "description": "The glutamatergic (excitatory) part of the nucleus isthmi."
+  },
+  {
+   "id": 1150,
+   "name": "posterior cholinergic domain of the nucleus isthmi",
+   "parent": 1147,
+   "depth": 5,
+   "children": [],
+   "color": "#A4C3B4",
+   "hasMesh": true,
+   "division": "hindbrain",
+   "description": "A cholinergic part of the nucleus isthmi, which provides acetylcholine to the tectum."
+  },
+  {
+   "id": 1151,
+   "name": "gabaergic domain of the nucleus isthmi",
+   "parent": 1147,
+   "depth": 5,
+   "children": [],
+   "color": "#B32591",
+   "hasMesh": true,
+   "division": "hindbrain",
+   "description": "The GABAergic (inhibitory) part of the nucleus isthmi."
+  },
+  {
+   "id": 1152,
+   "name": "anterior cholinergic domain of the nucleus isthmi",
+   "parent": 1147,
+   "depth": 5,
+   "children": [],
+   "color": "#773777",
+   "hasMesh": true,
+   "division": "hindbrain",
+   "description": "A cholinergic part of the nucleus isthmi, which provides acetylcholine to the tectum."
+  },
+  {
+   "id": 1143,
+   "name": "intermediate medulla oblongata",
+   "parent": 1096,
+   "depth": 2,
+   "children": [
+    1081,
+    1110
+   ],
+   "color": "#3A9FAB",
+   "hasMesh": true,
+   "division": "hindbrain",
+   "description": "The middle part of the medulla oblongata, including the abducens and facial motor nuclei."
+  },
+  {
+   "id": 1081,
+   "name": "intermediate ventral medulla oblongata (entire)",
+   "parent": 1143,
+   "depth": 3,
+   "children": [
+    1055,
+    1071,
+    1086
+   ],
+   "color": "#79EB7C",
+   "hasMesh": true,
+   "division": "hindbrain",
+   "description": "The ventral part of the middle medulla, including the abducens and facial motor nuclei and reticular neurons."
+  },
+  {
+   "id": 1055,
+   "name": "intermediate ventral medulla oblongata (remaining)",
+   "parent": 1081,
+   "depth": 4,
+   "children": [],
+   "color": "#3EB4F9",
+   "hasMesh": true,
+   "division": "hindbrain",
+   "description": "The remainder of the middle ventral medulla, mainly reticular and premotor neurons."
+  },
+  {
+   "id": 1071,
+   "name": "facial motor nucleus",
+   "parent": 1081,
+   "depth": 4,
+   "children": [],
+   "color": "#BA263D",
+   "hasMesh": true,
+   "division": "hindbrain",
+   "description": "Cranial nerve VII motor neurons. In fish they control the muscles of the hyoid arch and gill cover (operculum), which are used in feeding and breathing movements."
+  },
+  {
+   "id": 1086,
+   "name": "abducens motor nucleus",
+   "parent": 1081,
+   "depth": 4,
+   "children": [],
+   "color": "#604FF4",
+   "hasMesh": true,
+   "division": "hindbrain",
+   "description": "Cranial nerve VI motor neurons. They drive the lateral rectus muscle, which turns the eye outward and is central to saccades and the optokinetic reflex."
+  },
+  {
+   "id": 1110,
+   "name": "intermediate dorsal medulla oblongata",
+   "parent": 1143,
+   "depth": 3,
+   "children": [
+    1114,
+    1082,
+    1057,
+    1069
+   ],
+   "color": "#C1F5F1",
+   "hasMesh": true,
+   "division": "hindbrain",
+   "description": "The dorsal part of the middle medulla, organized in stripes."
+  },
+  {
+   "id": 1114,
+   "name": "intermediate dorsal medulla oblongata stripe 1",
+   "parent": 1110,
+   "depth": 4,
+   "children": [],
+   "color": "#3B8F15",
+   "hasMesh": true,
+   "division": "hindbrain",
+   "description": "One of the longitudinal stripes of the intermediate dorsal medulla. Hindbrain neurons are arranged in stripes by transmitter type and developmental age. The dorsal stripes include sensory and premotor neurons; this stripe is an anatomical landmark rather than a single functional unit."
+  },
+  {
+   "id": 1082,
+   "name": "intermediate dorsal medulla oblongata stripe 2&3",
+   "parent": 1110,
+   "depth": 4,
+   "children": [],
+   "color": "#58A399",
+   "hasMesh": true,
+   "division": "hindbrain",
+   "description": "One of the longitudinal stripes of the intermediate dorsal medulla. Hindbrain neurons are arranged in stripes by transmitter type and developmental age. The dorsal stripes include sensory and premotor neurons; this stripe is an anatomical landmark rather than a single functional unit."
+  },
+  {
+   "id": 1057,
+   "name": "intermediate dorsal medulla oblongata stripe 4",
+   "parent": 1110,
+   "depth": 4,
+   "children": [],
+   "color": "#EAEF98",
+   "hasMesh": true,
+   "division": "hindbrain",
+   "description": "One of the longitudinal stripes of the intermediate dorsal medulla. Hindbrain neurons are arranged in stripes by transmitter type and developmental age. The dorsal stripes include sensory and premotor neurons; this stripe is an anatomical landmark rather than a single functional unit."
+  },
+  {
+   "id": 1069,
+   "name": "intermediate dorsal medulla oblongata stripe 5",
+   "parent": 1110,
+   "depth": 4,
+   "children": [],
+   "color": "#D0439E",
+   "hasMesh": true,
+   "division": "hindbrain",
+   "description": "One of the longitudinal stripes of the intermediate dorsal medulla. Hindbrain neurons are arranged in stripes by transmitter type and developmental age. The dorsal stripes include sensory and premotor neurons; this stripe is an anatomical landmark rather than a single functional unit."
+  },
+  {
+   "id": 1104,
+   "name": "inferior medulla oblongata",
+   "parent": 1096,
+   "depth": 2,
+   "children": [
+    1050,
+    1059
+   ],
+   "color": "#10173A",
+   "hasMesh": true,
+   "division": "hindbrain",
+   "description": "The back (caudal) part of the medulla oblongata, next to the spinal cord. It contains vagal sensory and motor centres, the area postrema, the inferior olive and the inferior raphe."
+  },
+  {
+   "id": 1050,
+   "name": "inferior dorsal medulla oblongata",
+   "parent": 1104,
+   "depth": 3,
+   "children": [
+    1070,
+    1090,
+    1105,
+    1109,
+    1074,
+    1111,
+    1136
+   ],
+   "color": "#8AC4F1",
+   "hasMesh": true,
+   "division": "hindbrain",
+   "description": "The dorsal part of the caudal medulla, containing the vagal sensory lobe, vagus motor nucleus and area postrema."
+  },
+  {
+   "id": 1070,
+   "name": "inferior dorsal medulla oblongata stripe 1",
+   "parent": 1050,
+   "depth": 4,
+   "children": [],
+   "color": "#8BB2DF",
+   "hasMesh": true,
+   "division": "hindbrain",
+   "description": "One of the longitudinal stripes of the inferior dorsal medulla. Hindbrain neurons are arranged in stripes by transmitter type and developmental age. The dorsal stripes include sensory and premotor neurons; this stripe is an anatomical landmark rather than a single functional unit."
+  },
+  {
+   "id": 1090,
+   "name": "inferior dorsal medulla oblongata stripe 2&3",
+   "parent": 1050,
+   "depth": 4,
+   "children": [],
+   "color": "#9A7306",
+   "hasMesh": true,
+   "division": "hindbrain",
+   "description": "One of the longitudinal stripes of the inferior dorsal medulla. Hindbrain neurons are arranged in stripes by transmitter type and developmental age. The dorsal stripes include sensory and premotor neurons; this stripe is an anatomical landmark rather than a single functional unit."
+  },
+  {
+   "id": 1105,
+   "name": "inferior dorsal medulla oblongata stripe 4",
+   "parent": 1050,
+   "depth": 4,
+   "children": [],
+   "color": "#D27EED",
+   "hasMesh": true,
+   "division": "hindbrain",
+   "description": "One of the longitudinal stripes of the inferior dorsal medulla. Hindbrain neurons are arranged in stripes by transmitter type and developmental age. The dorsal stripes include sensory and premotor neurons; this stripe is an anatomical landmark rather than a single functional unit."
+  },
+  {
+   "id": 1109,
+   "name": "inferior dorsal medulla oblongata stripe 5",
+   "parent": 1050,
+   "depth": 4,
+   "children": [],
+   "color": "#135492",
+   "hasMesh": true,
+   "division": "hindbrain",
+   "description": "One of the longitudinal stripes of the inferior dorsal medulla. Hindbrain neurons are arranged in stripes by transmitter type and developmental age. The dorsal stripes include sensory and premotor neurons; this stripe is an anatomical landmark rather than a single functional unit."
+  },
+  {
+   "id": 1074,
+   "name": "vagus motor nucleus",
+   "parent": 1050,
+   "depth": 4,
+   "children": [],
+   "color": "#7D32F2",
+   "hasMesh": true,
+   "division": "hindbrain",
+   "description": "Cranial nerve X motor neurons. They control the pharynx and gill arches and send autonomic output to the heart and gut."
+  },
+  {
+   "id": 1111,
+   "name": "area postrema",
+   "parent": 1050,
+   "depth": 4,
+   "children": [],
+   "color": "#44ED13",
+   "hasMesh": true,
+   "division": "hindbrain",
+   "description": "A chemosensory zone outside the blood-brain barrier that detects toxins and circulating signals. It triggers aversive responses (in mammals, nausea and vomiting)."
+  },
+  {
+   "id": 1136,
+   "name": "vagal sensory lobe",
+   "parent": 1050,
+   "depth": 4,
+   "children": [],
+   "color": "#DE1BE9",
+   "hasMesh": true,
+   "division": "hindbrain",
+   "description": "Receives taste and visceral (internal-organ) sensory input from the mouth, pharynx and gut via the vagus nerve."
+  },
+  {
+   "id": 1059,
+   "name": "inferior ventral medulla oblongata (entire)",
+   "parent": 1104,
+   "depth": 3,
+   "children": [
+    1052,
+    1064,
+    1133,
+    1141
+   ],
+   "color": "#0A6187",
+   "hasMesh": true,
+   "division": "hindbrain",
+   "description": "The ventral part of the caudal medulla: the inferior olive, inferior raphe, lateral reticular nucleus and reticular neurons."
+  },
+  {
+   "id": 1052,
+   "name": "inferior olive",
+   "parent": 1059,
+   "depth": 4,
+   "children": [],
+   "color": "#20DDAD",
+   "hasMesh": true,
+   "division": "hindbrain",
+   "description": "Sends climbing fibres to the cerebellum, which carry 'error' or teaching signals that drive motor learning."
+  },
+  {
+   "id": 1064,
+   "name": "inferior raphe",
+   "parent": 1059,
+   "depth": 4,
+   "children": [],
+   "color": "#7C29CE",
+   "hasMesh": true,
+   "division": "hindbrain",
+   "description": "A serotonergic nucleus whose projections reach the spinal cord, where they modulate swimming and other motor output."
+  },
+  {
+   "id": 1133,
+   "name": "lateral reticular nucleus",
+   "parent": 1059,
+   "depth": 4,
+   "children": [],
+   "color": "#FAAEE7",
+   "hasMesh": true,
+   "division": "hindbrain",
+   "description": "Relays information about ongoing movement from the spinal cord and brainstem to the cerebellum."
+  },
+  {
+   "id": 1141,
+   "name": "inferior ventral medulla oblongata (remaining)",
+   "parent": 1059,
+   "depth": 4,
+   "children": [],
+   "color": "#90ACA2",
+   "hasMesh": true,
+   "division": "hindbrain",
+   "description": "The remainder of the caudal ventral medulla, mainly reticular and premotor neurons."
+  },
+  {
+   "id": 1101,
+   "name": "peripheral nervous system",
+   "parent": null,
+   "depth": 0,
+   "children": [
+    1048,
+    1056,
+    1091,
+    1108,
+    1125,
+    1132
+   ],
+   "color": "#041BE2",
+   "hasMesh": true,
+   "division": "peripheral",
+   "description": "Sensory ganglia and organs outside the brain that are included in the atlas."
+  },
+  {
+   "id": 1048,
+   "name": "olfactory epithelium",
+   "parent": 1101,
+   "depth": 1,
+   "children": [],
+   "color": "#65DF32",
+   "hasMesh": true,
+   "division": "peripheral",
+   "description": "The lining of the nose, where odour-receptor neurons detect smells and send their axons to the olfactory bulb."
+  },
+  {
+   "id": 1056,
+   "name": "anterior lateral line ganglion",
+   "parent": 1101,
+   "depth": 1,
+   "children": [],
+   "color": "#27A00E",
+   "hasMesh": true,
+   "division": "peripheral",
+   "description": "Sensory neurons that innervate lateral-line neuromasts on the head and sense water movement."
+  },
+  {
+   "id": 1091,
+   "name": "trigeminal ganglion",
+   "parent": 1101,
+   "depth": 1,
+   "children": [],
+   "color": "#67D330",
+   "hasMesh": true,
+   "division": "peripheral",
+   "description": "Sensory neurons for touch, temperature and pain on the head (cranial nerve V). They trigger escape responses to touch on the head."
+  },
+  {
+   "id": 1108,
+   "name": "posterior lateral line ganglion",
+   "parent": 1101,
+   "depth": 1,
+   "children": [],
+   "color": "#F788C1",
+   "hasMesh": true,
+   "division": "peripheral",
+   "description": "Sensory neurons that innervate lateral-line neuromasts along the body and tail."
+  },
+  {
+   "id": 1125,
+   "name": "octaval ganglion",
+   "parent": 1101,
+   "depth": 1,
+   "children": [],
+   "color": "#8A54F1",
+   "hasMesh": true,
+   "division": "peripheral",
+   "description": "Cranial nerve VIII sensory neurons that innervate the inner ear and carry hearing and balance (vestibular) signals."
+  },
+  {
+   "id": 1132,
+   "name": "glossopharyngeal ganglion",
+   "parent": 1101,
+   "depth": 1,
+   "children": [],
+   "color": "#634E47",
+   "hasMesh": true,
+   "division": "peripheral",
+   "description": "Cranial nerve IX sensory neurons, which carry taste and sensation from the pharynx."
+  }
+ ]
+}

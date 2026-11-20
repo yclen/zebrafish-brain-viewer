@@ -1,0 +1,107 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Zebrafish Brain Viewer</title>
+  <link rel="stylesheet" href="style.css" />
+  <script type="importmap">
+    {
+      "imports": {
+        "three": "https://cdn.jsdelivr.net/npm/three@0.170.0/build/three.module.js",
+        "three/addons/": "https://cdn.jsdelivr.net/npm/three@0.170.0/examples/jsm/"
+      }
+    }
+  </script>
+</head>
+<body>
+  <header class="topbar">
+    <button id="toggle-tree" class="icon-btn" title="Show/hide region list" aria-label="Show or hide region list">☰</button>
+    <h1>Zebrafish Brain <span>· larva, 6 dpf</span></h1>
+    <div class="toolbar">
+      <div class="group" role="group" aria-label="Detail level">
+        <span class="label">Detail</span>
+        <button data-preset="divisions">Divisions</button>
+        <button data-preset="regions" class="active">Regions</button>
+        <button data-preset="detail">Fine</button>
+      </div>
+      <div class="group" role="group" aria-label="Camera view">
+        <span class="label">View</span>
+        <button data-view="dorsal" title="From above">Top</button>
+        <button data-view="lateral" title="From the side">Side</button>
+        <button data-view="anterior" title="From the front">Front</button>
+        <button data-view="ventral" title="From below">Bottom</button>
+      </div>
+    </div>
+  </header>
+
+  <main class="layout">
+    <aside id="tree-panel" class="panel tree-panel">
+      <input id="search" type="search" placeholder="Search regions…" autocomplete="off" />
+      <div class="tree-actions">
+        <button id="show-all-level" title="Show the regions of the current detail level">Reset</button>
+        <button id="hide-all">Hide all</button>
+      </div>
+      <ul id="tree" class="tree" role="tree"></ul>
+    </aside>
+
+    <section class="viewport">
+      <canvas id="canvas"></canvas>
+      <div id="tooltip" class="tooltip" hidden></div>
+      <div id="loading" class="loading">Loading brain mesh… <span id="loading-pct"></span></div>
+      <div class="view-controls panel">
+        <label><input type="checkbox" id="outline-toggle" checked /> Brain outline</label>
+        <label>Opacity <input type="range" id="opacity" min="0.15" max="1" step="0.05" value="1" /></label>
+        <label>Colours
+          <select id="color-mode">
+            <option value="atlas">Atlas</option>
+            <option value="division">By division</option>
+          </select>
+        </label>
+        <label><input type="checkbox" id="spin" /> Auto-rotate</label>
+      </div>
+      <div class="legend panel" id="legend">
+        <span><i style="--c:#7fc97f"></i>Forebrain</span>
+        <span><i style="--c:#6baed6"></i>Midbrain</span>
+        <span><i style="--c:#fdae6b"></i>Hindbrain</span>
+        <span><i style="--c:#bc80bd"></i>Peripheral</span>
+      </div>
+    </section>
+
+    <aside id="info-panel" class="panel info-panel">
+      <div id="info-empty" class="info-empty">
+        <h2>Explore the larval zebrafish brain</h2>
+        <p>Click a region in the 3D view or in the list to read what it does.</p>
+        <ul class="hints">
+          <li><b>Drag</b> to rotate · <b>scroll</b> to zoom · <b>right-drag</b> to pan</li>
+          <li><b>Detail</b> switches between the 3 main divisions, main regions and fine subregions</li>
+          <li>Use <b>Show subregions</b> to break a selected region into its parts</li>
+          <li><b>Esc</b> clears the selection</li>
+        </ul>
+        <p class="orient">Orientation: front of the fish = olfactory bulbs; top = optic tectum.</p>
+      </div>
+      <div id="info" hidden>
+        <nav id="crumbs" class="crumbs"></nav>
+        <h2 id="info-name"></h2>
+        <div id="info-division" class="pill"></div>
+        <p id="info-desc"></p>
+        <div class="info-buttons">
+          <button id="btn-isolate">Show only this</button>
+          <button id="btn-expand">Show subregions</button>
+          <button id="btn-collapse">Show parent</button>
+        </div>
+        <div id="info-children-wrap">
+          <h3>Subregions</h3>
+          <ul id="info-children" class="child-list"></ul>
+        </div>
+      </div>
+      <footer class="credit">
+        Data: <a href="https://mapzebrain.org" target="_blank" rel="noopener">mapZebrain</a> region atlas v2.0 (2024),
+        Kunst et al. 2019, <i>Neuron</i>. Descriptions are simplified summaries.
+      </footer>
+    </aside>
+  </main>
+
+  <script type="module" src="app.js"></script>
+</body>
+</html>
