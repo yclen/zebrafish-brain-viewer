@@ -92,6 +92,22 @@ def icp_similarity(src, dst, s, R, t, iters=60, trim=0.9):
     return s, R, t, err
 
 
+def ellipsoid_mesh(c, axes, nu=32, nv=16):
+    """Closed ellipsoid around centre c; rows of `axes` are the three semi-axis vectors."""
+    axes = np.asarray(axes, float)
+    u = np.linspace(0, 2 * np.pi, nu, endpoint=False)
+    w = np.linspace(0, np.pi, nv + 1)
+    V = [c + axes[0] * np.cos(a) * np.sin(b) + axes[1] * np.sin(a) * np.sin(b) + axes[2] * np.cos(b)
+         for b in w for a in u]
+    F = []
+    for i in range(nv):
+        for j in range(nu):
+            p0, p1 = i * nu + j, i * nu + (j + 1) % nu
+            p2, p3 = (i + 1) * nu + j, (i + 1) * nu + (j + 1) % nu
+            F += [(p0, p2, p1), (p1, p2, p3)]
+    return np.array(V), np.array(F)
+
+
 def write_stl(path, verts, faces):
     tri = verts[faces].astype(np.float32)
     n = np.cross(tri[:, 1] - tri[:, 0], tri[:, 2] - tri[:, 0])
@@ -431,19 +447,126 @@ def main(recon, seg, items_path, atlas_stl_dir, out_dir, factor=8):
     fin_v, fin_f = np.concatenate([dv_, vv_]), np.concatenate([df_, vf_ + len(dv_)])
     log(f"tail: from {z0_um:.0f} um to body tip {z_tip:.0f} um, fin to {z_fin_end:.0f} um (CT space, snout at {z_snout * um:.0f})")
 
-    # ---- 5. meshes in atlas space
+    # ---- 5. assemble a clean fish. The goal is a realistic-looking larva that keeps the scanned
+    # proportions, not every CT bump: one smooth skin (scan + tail merged), rounded eyes with a
+    # lens in each, a smooth swim bladder, and clean pectoral fins in place of the scan's
+    # fragmentary ones.
     meta = {"affine_A": R.tolist(), "affine_b": t.tolist(), "stretch": sv.tolist(), "ct_voxel_um": um,
             "note": "atlas_um = A @ ct_um(x,y,z) + b"}
-    parts = []
-    for name, mask, sigma in (("fish_body", solid, 1.5), ("swim_bladder", bladder, 1.0),
-                              ("eyes", eyes, 1.0), ("lenses", lens_mask, 0.8)):
-        if mask.any():
-            v, fc = mesh_from_mask(mask, um, sigma)
-            if name == "fish_body":
-                # drop the flat end cap where the scan stops; the tail continues from this slice
-                fc = fc[~np.all(v[fc][:, :, 0] > z0_um + 0.5 * um, axis=1)]
-            parts.append((name, v[:, ::-1], fc))  # (x, y, z) CT um
-    parts += [("fish_tail", tail_v, tail_f), ("fin_fold", fin_v, fin_f)]
+
+    # 5a. one skin. Remove thin structures (the pectoral fins and fin-fold fragments the scan only
+    # half captured) with a ~18 um ball opening, keep the atlas brain/eyes covered, stop the scan
+    # at the tail's first ring, rasterize the tail rings into the same grid, and mesh it all at once.
+    r3 = 3
+    zz, yy, xx = np.indices((2 * r3 + 1,) * 3) - r3
+    ball3 = zz ** 2 + yy ** 2 + xx ** 2 <= r3 * r3
+    core = ndi.binary_opening(np.pad(solid, r3 + 1), structure=ball3)[r3 + 1:-r3 - 1, r3 + 1:-r3 - 1, r3 + 1:-r3 - 1]
+    core = largest_component(core) | ndi.binary_dilation(atlas_solid, iterations=1)
+    core[z_c + 1:] = False
+    pad = 25
+    nz_ext = int(np.ceil((z_tip + 30) / um)) + 2
+    G = np.zeros((nz_ext, solid.shape[1] + 2 * pad, solid.shape[2] + 2 * pad), bool)
+    G[: solid.shape[0], pad: pad + solid.shape[1], pad: pad + solid.shape[2]] = core
+    from skimage.draw import polygon as fill_polygon
+    zs_arr = np.array(zs)
+    for k in range(z_c, nz_ext):
+        z = k * um
+        if z < zs_arr[0] or z > zs_arr[-1]:
+            continue
+        i = int(np.clip(np.searchsorted(zs_arr, z) - 1, 0, len(zs_arr) - 2))
+        fr = (z - zs_arr[i]) / (zs_arr[i + 1] - zs_arr[i])
+        ring = rings[i] * (1 - fr) + rings[i + 1] * fr
+        rr_, cc_ = fill_polygon(ring[:, 1] / um + pad, ring[:, 0] / um + pad, G.shape[1:])
+        G[k, rr_, cc_] = True
+    bv, bf = mesh_from_mask(G, um, sigma=2.5)
+    body_v = bv[:, ::-1] - np.array([pad * um, pad * um, 0])
+
+    # 5b. eyes: the CT eyes, cleaned and smoothed, with a socket where the lens sits; lenses as
+    # spheres at the scanned lens centres (the scanned lens is a bright ring with a dark core, which
+    # meshed as broken shells).
+    lab_e, n_e = ndi.label(ndi.binary_opening(eyes, iterations=1))
+    sizes_e = ndi.sum(lab_e > 0, lab_e, range(1, n_e + 1))
+    eyes_c = np.isin(lab_e, 1 + np.argsort(sizes_e)[-2:])
+    eyes_c = np.stack([ndi.binary_fill_holes(s) for s in ndi.binary_fill_holes(eyes_c)])
+    r_lens = (lens_mask.sum() / 2 * um ** 3 * 3 / 4 / np.pi) ** (1 / 3)
+    # Each eye is built in atlas space as a sphere fitted to the (cropped) atlas retina, just large
+    # enough to enclose it, so it completes the retina the atlas cuts off. A larval eye is close to
+    # spherical. The lens faces sideways and slightly forward and
+    # bulges out through the pupil, ringed by a thin metallic iris. Meshes are built in atlas space
+    # and mapped back into CT space, because every part goes through the same transform on output.
+    lab2, _ = ndi.label(eyes_c)
+    r_lens_a = r_lens * abs(np.linalg.det(R)) ** (1 / 3)
+    ev_l, ef_l, lv, lf, iv, if_ = [], [], [], [], [], []
+    to_ct = lambda P: np.linalg.solve(R, (np.atleast_2d(P) - t).T).T
+    for k in (1, 2):
+        ce_ct = np.argwhere(lab2 == k)[:, ::-1].mean(0) * um
+        L_ct = lenses[np.argmin(np.linalg.norm(lenses - ce_ct, axis=1))]
+        c_at = R @ ce_ct + t
+        side = 0 if c_at[0] < mid_x else 1
+        ca = eyes_atlas[side]
+        ret_side = retina[(retina[:, 0] < mid_x) if side == 0 else (retina[:, 0] >= mid_x)]
+        # sphere-fit radius of the retina cup (percentiles are skewed by the optic nerve, which is
+        # part of the atlas retina region) plus a margin for the outer eye layers
+        Af = np.c_[2 * ret_side, np.ones(len(ret_side))]
+        cf, *_ = np.linalg.lstsq(Af, (ret_side ** 2).sum(1), rcond=None)
+        r_eye = float(np.sqrt(cf[3] + (cf[:3] ** 2).sum())) + 28
+        # larval eyes look sideways and a little forward
+        out = np.array([-1.0 if side == 0 else 1.0, -0.3, 0.0])
+        out /= np.linalg.norm(out)
+        v_, f_ = ellipsoid_mesh(ca, np.eye(3) * r_eye, 40, 20)
+        ef_l.append(f_ + sum(len(x) for x in ev_l)); ev_l.append(to_ct(v_))
+        lc = ca + out * (r_eye - 0.35 * r_lens_a)
+        v_, f_ = ellipsoid_mesh(lc, np.eye(3) * r_lens_a, 28, 14)
+        lf.append(f_ + sum(len(x) for x in lv)); lv.append(to_ct(v_))
+        a1 = np.cross(out, [0, 0, 1.0]); a1 /= np.linalg.norm(a1); a2 = np.cross(out, a1)
+        R_ring, r_tube = r_lens_a * 1.2, r_lens_a * 0.2
+        uu, vv = np.meshgrid(np.linspace(0, 2 * np.pi, 48, endpoint=False), np.linspace(0, 2 * np.pi, 10, endpoint=False))
+        rc = ca + out * (r_eye - 0.08 * r_lens_a)
+        ring_pts = (rc + (R_ring + r_tube * np.cos(vv))[..., None] * (np.cos(uu)[..., None] * a1 + np.sin(uu)[..., None] * a2)
+                    + (r_tube * 0.5 * np.sin(vv))[..., None] * out).reshape(-1, 3)
+        F_ = []
+        for i in range(10):
+            for j in range(48):
+                p0, p1 = i * 48 + j, i * 48 + (j + 1) % 48
+                p2, p3 = ((i + 1) % 10) * 48 + j, ((i + 1) % 10) * 48 + (j + 1) % 48
+                F_ += [(p0, p2, p1), (p1, p2, p3)]
+        if_.append(np.array(F_) + sum(len(x) for x in iv)); iv.append(to_ct(ring_pts))
+        log(f"eye {k}: atlas centre {ca.round(0)}, radius {r_eye:.0f} um, lens direction {out.round(2)}")
+    eyes_v, ef = np.concatenate(ev_l), np.concatenate(ef_l)
+    lens_v, lens_f = np.concatenate(lv), np.concatenate(lf)
+    iris_v, iris_f = np.concatenate(iv), np.concatenate(if_)
+    log(f"lens radius {r_lens:.0f} um (CT space)")
+
+    # 5c. swim bladder: ellipsoid with the scanned bladder's position, size and orientation
+    pb = np.argwhere(bladder)[:, ::-1] * um
+    cb = pb.mean(0)
+    w_, V_ = np.linalg.eigh(np.cov((pb - cb).T))
+    sb_v, sb_f = ellipsoid_mesh(cb, (V_ * np.sqrt(5 * w_)).T, 36, 18)
+    log(f"swim bladder ellipsoid semi-axes {np.sqrt(5 * w_).round(0)} um")
+
+    # 5d. pectoral fins: the scan shows thin fin fragments on both sides from ~520 um behind its
+    # first slice. Model each as a thin paddle (~300 um long) attached at the side of the body,
+    # angled ~30 deg outward and backward, as larvae hold them between beats.
+    z_pf = 540.0
+    kp = int(round(z_pf / um))
+    sl = np.argwhere(core[kp])[:, ::-1] * um  # (x, y) of the body cross-section
+    pf_v, pf_f = [], []
+    for sgn in (1, -1):
+        proj = sl @ lr2 * sgn
+        mid = np.abs((sl - sl.mean(0)) @ dv2) < 40
+        base = sl[mid][np.argmax(proj[mid])] - lr2 * sgn * 10
+        dfin = np.r_[lr2 * sgn * np.sin(np.radians(30)), np.cos(np.radians(30))]
+        dv3 = np.r_[dv2, 0.0]
+        nrm = np.cross(dfin, dv3)
+        cfin = np.r_[base, z_pf] + dfin * 150 * 0.85
+        v_, f_ = ellipsoid_mesh(cfin, np.stack([dfin * 150, dv3 * 70, nrm * 3]), 32, 12)
+        pf_f.append(f_ + sum(len(x) for x in pf_v))
+        pf_v.append(v_)
+    pf_v, pf_f = np.concatenate(pf_v), np.concatenate(pf_f)
+
+    parts = [("fish_body", body_v, bf), ("fin_fold", fin_v, fin_f), ("pectoral_fins", pf_v, pf_f),
+             ("eyes", eyes_v, ef), ("lenses", lens_v, lens_f), ("iris", iris_v, iris_f),
+             ("swim_bladder", sb_v, sb_f)]
     for name, v, fc in parts:
         v = v @ R.T + t
         write_stl(os.path.join(out_dir, f"{name}.stl"), v, fc)

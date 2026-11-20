@@ -263,13 +263,16 @@ function allMaterials() {
 // data/fish.glb is already in atlas coordinates (see build/ct_fish_body.py), so it goes straight
 // into the same group as the brain.
 let fish = null; // { meshes, box, radius }
+// Larval zebrafish are nearly transparent, with dark pigmented eyes that have a metallic sheen
+// (iridophores) and a silvery, gas-filled swim bladder.
 const FISH_MATERIALS = {
-  fish_body: { color: '#e9dcc8', opacity: 0.17, order: 11 },
-  fish_tail: { color: '#e9dcc8', opacity: 0.17, order: 11 },
-  fin_fold: { color: '#e9dcc8', opacity: 0.14, order: 12 },
-  swim_bladder: { color: '#d4dde8', opacity: 0.5, order: 6, metalness: 0.35 },
-  eyes: { color: '#3a3530', opacity: 0.35, order: 9 },
-  lenses: { color: '#eef3f8', opacity: 0.75, order: 8, metalness: 0.2 },
+  fish_body: { color: '#eadfce', opacity: 0.2, order: 11, roughness: 0.45 },
+  fin_fold: { color: '#f0e8dc', opacity: 0.13, order: 12, double: true },
+  pectoral_fins: { color: '#f0e8dc', opacity: 0.09, order: 12, double: true },
+  iris: { color: '#b49a62', opacity: 0.95, order: 7, metalness: 0.8, roughness: 0.3, solid: true },
+  swim_bladder: { color: '#d9e1ea', opacity: 0.65, order: 6, metalness: 0.6, roughness: 0.25 },
+  eyes: { color: '#17140f', opacity: 0.9, order: 7, metalness: 0.55, roughness: 0.3, solid: true },
+  lenses: { color: '#c3ccd4', opacity: 0.85, order: 8, metalness: 0.3, roughness: 0.12 },
 };
 async function loadFish() {
   if (fish) return fish;
@@ -280,8 +283,9 @@ async function loadFish() {
   for (const o of meshes) {
     const spec = FISH_MATERIALS[o.name] || FISH_MATERIALS.fish_body;
     o.material = new THREE.MeshStandardMaterial({
-      color: spec.color, transparent: true, opacity: spec.opacity, depthWrite: false,
-      roughness: 0.6, metalness: spec.metalness || 0,
+      color: spec.color, transparent: true, opacity: spec.opacity, depthWrite: !!spec.solid,
+      roughness: spec.roughness ?? 0.6, metalness: spec.metalness || 0,
+      side: spec.double ? THREE.DoubleSide : THREE.FrontSide,
     });
     o.renderOrder = spec.order;
     o.raycast = () => {}; // clicks pass through the skin to the brain regions
