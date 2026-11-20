@@ -37,7 +37,7 @@ a { color: var(--accent); }
 .icon-btn { padding: 2px 8px; font-size: 16px; }
 
 .layout { flex: 1; display: grid; grid-template-columns: 290px 1fr 320px; min-height: 0; }
-.layout.tree-hidden { grid-template-columns: 0 1fr 320px; }
+.layout.tree-hidden { grid-template-columns: 1fr 320px; }
 .layout.tree-hidden .tree-panel { display: none; }
 .panel { background: var(--panel); }
 .tree-panel { border-right: 1px solid var(--border); display: flex; flex-direction: column; min-height: 0; padding: 10px; gap: 8px; }
@@ -81,6 +81,10 @@ a { color: var(--accent); }
 .view-controls label { display: flex; align-items: center; gap: 6px; white-space: nowrap; }
 .view-controls select { background: var(--panel-2); border: 1px solid var(--border); border-radius: 4px; padding: 1px 4px; }
 .view-controls input[type=range] { width: 90px; accent-color: var(--accent); }
+.slice-row { display: flex; align-items: center; gap: 8px; flex-basis: 100%; }
+.slice-row input[type=range] { flex: 1; min-width: 120px; width: auto; }
+.slice-row button.small { padding: 1px 8px; }
+.readout { color: var(--muted); font-variant-numeric: tabular-nums; min-width: 9ch; font-size: 12px; }
 .legend {
   position: absolute; right: 12px; top: 12px; display: none; gap: 10px; padding: 6px 10px;
   border-radius: 8px; border: 1px solid var(--border); font-size: 12px;

@@ -22,6 +22,13 @@ const canvas = document.getElementById('canvas');
 const renderer = new THREE.WebGLRenderer({ canvas, antialias: true });
 renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
 renderer.setClearColor('#0f1216');
+renderer.localClippingEnabled = true;
+
+// Slicing: one clipping plane shared by every material. Cut regions show a flat-coloured "cap"
+// (the mesh's own back faces, drawn unlit), which reads as a solid cross-section.
+const clipPlane = new THREE.Plane(new THREE.Vector3(0, -1, 0), 0);
+const slice = { axis: 'off', pos: 0.5, flip: false };
+let worldBox = new THREE.Box3();
 
 const scene = new THREE.Scene();
 const camera = new THREE.PerspectiveCamera(35, 1, 1, 20000);
@@ -54,6 +61,7 @@ function resize() {
 new ResizeObserver(resize).observe(canvas.parentElement);
 
 // ---------------------------------------------------------------- loading
+const loader = new GLTFLoader().setMeshoptDecoder(MeshoptDecoder);
 const loadingEl = document.getElementById('loading');
 const loadingPct = document.getElementById('loading-pct');
 
@@ -62,7 +70,6 @@ async function load() {
   for (const r of meta.regions) regions.set(r.id, { ...r, mesh: null });
   roots = meta.regions.filter((r) => r.parent === null).map((r) => r.id);
 
-  const loader = new GLTFLoader().setMeshoptDecoder(MeshoptDecoder);
   const gltf = await loader.loadAsync('data/brain.glb', (e) => {
     if (e.total) loadingPct.textContent = `${Math.round((100 * e.loaded) / e.total)}%`;
   });
@@ -85,6 +92,11 @@ async function load() {
       r.mesh = o;
       o.material = new THREE.MeshStandardMaterial({ color: r.color, roughness: 0.55, metalness: 0.05 });
       o.userData.regionId = id;
+      const cap = new THREE.Mesh(o.geometry, new THREE.MeshBasicMaterial({ color: r.color, side: THREE.BackSide }));
+      cap.visible = false;
+      cap.raycast = () => {};
+      o.add(cap);
+      r.cap = cap;
     }
     brain.attach(o); // keeps world transform (dequantization scale/offset) while re-parenting
   }
@@ -96,6 +108,8 @@ async function load() {
   const center = box.getCenter(new THREE.Vector3());
   brain.position.sub(center);
   brainRadius = box.getSize(new THREE.Vector3()).length() / 2;
+  brain.updateMatrixWorld(true);
+  worldBox = new THREE.Box3().setFromObject(outlineMesh || brain);
   controls.maxDistance = brainRadius * 8;
   controls.minDistance = brainRadius * 0.15;
 
@@ -203,6 +217,7 @@ function applyColors() {
     const c = '#' + regionColor(r).getHexString();
     r.displayColor = c;
     if (r.mesh) r.mesh.material.color.set(c);
+    if (r.cap) r.cap.material.color.set(c).multiplyScalar(0.82);
     if (r.swatch) r.swatch.style.background = c;
   }
   document.getElementById('legend').classList.toggle('show', colorMode === 'division');
@@ -226,8 +241,121 @@ function applyMaterials() {
     m.emissiveIntensity = isSel ? 0.35 : 0;
     r.mesh.renderOrder = a < 1 ? 5 : 0;
     m.needsUpdate = true;
+    const cm = r.cap.material;
+    cm.transparent = a < 1;
+    cm.opacity = a;
+    cm.depthWrite = a >= 1;
+    r.cap.renderOrder = r.mesh.renderOrder;
   }
+  applySliceToMaterials();
 }
+
+// ---------------------------------------------------------------- slicing
+function allMaterials() {
+  const out = [];
+  for (const r of regions.values()) if (r.mesh) out.push(r.mesh.material, r.cap.material);
+  if (outlineMesh) out.push(outlineMesh.material);
+  if (fish) fish.meshes.forEach((m) => out.push(m.material));
+  return out;
+}
+
+// ---------------------------------------------------------------- fish body
+// data/fish.glb is already in atlas coordinates (see build/ct_fish_body.py), so it goes straight
+// into the same group as the brain.
+let fish = null; // { meshes, box, radius }
+const FISH_MATERIALS = {
+  fish_body: { color: '#e9dcc8', opacity: 0.17, order: 11 },
+  fish_tail: { color: '#e9dcc8', opacity: 0.17, order: 11 },
+  swim_bladder: { color: '#d4dde8', opacity: 0.5, order: 6, metalness: 0.35 },
+};
+async function loadFish() {
+  if (fish) return fish;
+  const gltf = await loader.loadAsync('data/fish.glb');
+  gltf.scene.updateMatrixWorld(true);
+  const meshes = [];
+  gltf.scene.traverse((o) => { if (o.isMesh) meshes.push(o); });
+  for (const o of meshes) {
+    const spec = FISH_MATERIALS[o.name] || FISH_MATERIALS.fish_body;
+    o.material = new THREE.MeshStandardMaterial({
+      color: spec.color, transparent: true, opacity: spec.opacity, depthWrite: false,
+      roughness: 0.6, metalness: spec.metalness || 0,
+    });
+    o.renderOrder = spec.order;
+    o.raycast = () => {}; // clicks pass through the skin to the brain regions
+    // Keep the node's transform as-is (it is in atlas space, like the brain meshes); attach() would
+    // instead preserve its world pose and cancel the brain group's rotation.
+    o.matrixWorld.decompose(o.position, o.quaternion, o.scale);
+    brain.add(o);
+  }
+  brain.updateMatrixWorld(true);
+  const box = new THREE.Box3();
+  meshes.forEach((m) => box.expandByObject(m));
+  fish = { meshes, box, radius: box.getSize(new THREE.Vector3()).length() / 2 };
+  return fish;
+}
+function fishVisible() { return !!fish && fish.meshes[0].visible; }
+function viewRadius() { return fishVisible() ? fish.radius * 0.8 : brainRadius; }
+function sliceBox() { return fishVisible() ? worldBox.clone().union(fish.box) : worldBox; }
+document.getElementById('fish-toggle').addEventListener('change', async (e) => {
+  const on = e.target.checked;
+  if (on && !fish) {
+    e.target.disabled = true;
+    try { await loadFish(); } catch (err) { console.error(err); e.target.checked = false; e.target.disabled = false; return; }
+    e.target.disabled = false;
+  }
+  if (!fish) return;
+  fish.meshes.forEach((m) => { m.visible = on; });
+  controls.maxDistance = viewRadius() * 8;
+  updateSlice();
+  setView(on ? 'lateral' : 'oblique');
+});
+function applySliceToMaterials() {
+  const on = slice.axis !== 'off';
+  for (const m of allMaterials()) {
+    const want = on ? 1 : 0;
+    if ((m.clippingPlanes?.length || 0) !== want) { m.clippingPlanes = on ? [clipPlane] : null; m.needsUpdate = true; }
+  }
+  for (const r of regions.values()) if (r.cap) r.cap.visible = on;
+}
+const AXES = {
+  horizontal: { i: 'y', from: 'from top' },
+  coronal: { i: 'z', from: 'from front' },
+  sagittal: { i: 'x', from: 'from side' },
+};
+const planeHelper = new THREE.PlaneHelper(clipPlane, 1, 0x5cc8d6);
+planeHelper.material.transparent = true;
+planeHelper.material.opacity = 0.5;
+planeHelper.visible = false;
+scene.add(planeHelper);
+function updateSlice() {
+  const on = slice.axis !== 'off';
+  document.getElementById('slice-pos').disabled = !on;
+  document.getElementById('slice-flip').disabled = !on;
+  const readout = document.getElementById('slice-readout');
+  planeHelper.visible = on;
+  if (on) {
+    const { i, from } = AXES[slice.axis];
+    const sb = sliceBox();
+    const lo = sb.min[i], hi = sb.max[i];
+    // Slider 0 = nothing removed; sliding right cuts deeper from the top / front / side.
+    const h = hi - slice.pos * (hi - lo);
+    const n = new THREE.Vector3(); n[i] = slice.flip ? 1 : -1;
+    clipPlane.normal.copy(n);
+    clipPlane.constant = slice.flip ? -h : h;
+    const size = sb.getSize(new THREE.Vector3());
+    planeHelper.size = Math.max(size.x, size.y, size.z) * 1.1;
+    readout.textContent = `${Math.round(hi - h)} µm ${from}`;
+  } else {
+    readout.textContent = '';
+  }
+  applySliceToMaterials();
+}
+document.getElementById('slice-axis').addEventListener('change', (e) => {
+  slice.axis = e.target.value;
+  updateSlice();
+});
+document.getElementById('slice-pos').addEventListener('input', (e) => { slice.pos = Number(e.target.value); updateSlice(); });
+document.getElementById('slice-flip').addEventListener('click', () => { slice.flip = !slice.flip; updateSlice(); });
 
 // ---------------------------------------------------------------- tree UI
 const treeEl = document.getElementById('tree');
@@ -384,7 +512,8 @@ function pick(ev) {
   pointer.set(((ev.clientX - rect.left) / rect.width) * 2 - 1, -((ev.clientY - rect.top) / rect.height) * 2 + 1);
   raycaster.setFromCamera(pointer, camera);
   const targets = [...regions.values()].filter((r) => r.mesh && r.visible && r.mesh.material.opacity > 0.1).map((r) => r.mesh);
-  const hits = raycaster.intersectObjects(targets, false);
+  let hits = raycaster.intersectObjects(targets, false);
+  if (slice.axis !== 'off') hits = hits.filter((h) => clipPlane.distanceToPoint(h.point) >= 0); // ignore cut-away parts
   if (!hits.length) return null;
   // Prefer the nearest opaque hit; faded parents only win if nothing else is under the cursor.
   const solid = hits.find((h) => h.object.material.opacity >= 0.5);
@@ -430,10 +559,11 @@ const VIEWS = {
 let tween = null;
 function setView(name, animate = true) {
   const dir = new THREE.Vector3(...VIEWS[name]).normalize();
-  const dist = brainRadius / Math.tan(THREE.MathUtils.degToRad(camera.fov / 2)) * 1.15 / Math.min(1, camera.aspect);
+  const dist = viewRadius() / Math.tan(THREE.MathUtils.degToRad(camera.fov / 2)) * 1.15 / Math.min(1, camera.aspect);
+  const target = fishVisible() ? fish.box.getCenter(new THREE.Vector3()) : new THREE.Vector3();
   const to = dir.multiplyScalar(dist);
-  if (!animate) { camera.position.copy(to); controls.target.set(0, 0, 0); controls.update(); return; }
-  tween = { from: camera.position.clone(), fromT: controls.target.clone(), to, start: performance.now(), t: 0 };
+  if (!animate) { camera.position.copy(to).add(target); controls.target.copy(target); controls.update(); return; }
+  tween = { from: camera.position.clone().sub(controls.target), fromT: controls.target.clone(), to, toT: target, start: performance.now(), t: 0 };
 }
 document.querySelectorAll('[data-view]').forEach((b) => b.addEventListener('click', () => setView(b.dataset.view)));
 document.querySelectorAll('[data-preset]').forEach((b) => b.addEventListener('click', () => applyPreset(b.dataset.preset)));
@@ -460,8 +590,8 @@ renderer.setAnimationLoop(() => {
     const len = THREE.MathUtils.lerp(tween.from.length(), tween.to.length(), k);
     const q = new THREE.Quaternion().setFromUnitVectors(a, b);
     const dir = a.clone().applyQuaternion(new THREE.Quaternion().slerp(q, k));
-    camera.position.copy(dir.multiplyScalar(len));
-    controls.target.lerpVectors(tween.fromT, new THREE.Vector3(), k);
+    controls.target.lerpVectors(tween.fromT, tween.toT, k);
+    camera.position.copy(dir.multiplyScalar(len)).add(controls.target);
     if (tween.t >= 1) tween = null;
   }
   controls.update();
