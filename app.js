@@ -297,7 +297,7 @@ async function loadFish() {
   return fish;
 }
 function fishVisible() { return !!fish && fish.meshes[0].visible; }
-function viewRadius() { return fishVisible() ? fish.radius * 0.8 : brainRadius; }
+function viewRadius() { return fishVisible() ? fish.radius * 1.05 : brainRadius; }
 function sliceBox() { return fishVisible() ? worldBox.clone().union(fish.box) : worldBox; }
 document.getElementById('fish-toggle').addEventListener('change', async (e) => {
   const on = e.target.checked;
